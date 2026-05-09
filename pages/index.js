@@ -14,9 +14,8 @@ function Nav({ onBuscar }) {
       boxShadow: '0 1px 8px rgba(0,0,0,.06)',
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <img src="/logo.png" alt="FarmáciaAí" style={{ height: 36 }} onError={e => { e.target.style.display='none' }} />
-          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: '#ff5a00', fontWeight: 400 }}>FarmáciaAí</span>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img src="/logo.png" alt="FarmáciaAí" style={{ height: 40, width: 'auto' }} />
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Link href="/cidades" style={{ fontSize: 14, color: '#555', padding: '6px 14px', borderRadius: 8, textDecoration: 'none' }}>Cidades</Link>
