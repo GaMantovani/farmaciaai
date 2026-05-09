@@ -22,20 +22,20 @@ function gerarSlugFarmacia(f) {
 function CTABusca({ farmacia }) {
   const [remedio, setRemedio] = useState('')
   return (
-    <div style={{ background:'#fff',borderBottom:'2px solid #ffe0cc',padding:'10px 20px',boxShadow:'0 2px 12px rgba(255,90,0,.12)' }}>
-      <div style={{ maxWidth:900,margin:'0 auto',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' }}>
-        <div style={{ fontSize:13,fontWeight:600,color:'#ff4500',whiteSpace:'nowrap',flexShrink:0 }}>
-          Compare preços em {farmacia.cidade}:
+    <div style={{ background:'linear-gradient(135deg,#fff8f5,#fff3ee)',borderBottom:'3px solid #ff5a00',borderTop:'3px solid #ff5a00',padding:'16px 20px',boxShadow:'0 4px 16px rgba(255,90,0,.15)' }}>
+      <div style={{ maxWidth:900,margin:'0 auto',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap' }}>
+        <div style={{ fontSize:15,fontWeight:700,color:'#ff4500',whiteSpace:'nowrap',flexShrink:0 }}>
+          💊 Comparar preços em {farmacia.cidade}:
         </div>
         <div style={{ flex:1,display:'flex',gap:8,minWidth:200 }}>
           <input type="text" value={remedio} onChange={e=>setRemedio(e.target.value)}
             onKeyDown={e=>{if(e.key==='Enter'&&remedio.trim()) window.location.href='/?q='+encodeURIComponent(remedio)}}
             placeholder="Digite o remédio..."
-            style={{ flex:1,height:36,border:'1.5px solid #ffe0cc',borderRadius:8,padding:'0 12px',fontSize:14,fontFamily:'inherit',outline:'none' }}
+            style={{ flex:1,height:44,border:'2px solid #ffb89a',borderRadius:10,padding:'0 14px',fontSize:15,fontFamily:'inherit',outline:'none',background:'#fff' }}
             onFocus={e=>e.target.style.borderColor='#ff5a00'} onBlur={e=>e.target.style.borderColor='#ffe0cc'} />
           <a href={remedio.trim() ? '/?q='+encodeURIComponent(remedio) : '/'}
-            style={{ height:36,padding:'0 16px',background:OG,color:'#fff',borderRadius:8,fontSize:13,fontWeight:700,display:'flex',alignItems:'center',whiteSpace:'nowrap',textDecoration:'none' }}>
-            Comparar
+            style={{ height:44,padding:'0 20px',background:OG,color:'#fff',borderRadius:10,fontSize:14,fontWeight:700,display:'flex',alignItems:'center',whiteSpace:'nowrap',textDecoration:'none',boxShadow:'0 4px 12px rgba(255,69,0,.3)' }}>
+            Comparar →
           </a>
         </div>
       </div>
