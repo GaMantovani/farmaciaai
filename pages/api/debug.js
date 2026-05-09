@@ -4,13 +4,13 @@ export default async function handler(req, res) {
   
   try {
     const response = await fetch(
-      `https://api.apify.com/v2/acts/apify~cheerio-scraper/runs?token=${token}&waitForFinish=30`,
+      `https://api.apify.com/v2/acts/apify~web-scraper/runs?token=${token}&waitForFinish=30`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           startUrls: [{ url: 'https://www.ultrafarma.com.br/busca?q=dipirona' }],
-          pageFunction: `async function pageFunction(context) { return { url: context.request.url, title: context.$('title').text() } }`,
+          pageFunction: `async function pageFunction(context) { return { url: context.request.url, title: document.title } }`,
           maxRequestsPerCrawl: 1,
         })
       }
