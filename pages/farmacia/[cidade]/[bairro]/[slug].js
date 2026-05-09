@@ -233,7 +233,7 @@ export async function getStaticPaths() {
   const paths = TODAS.map(f => ({
     params: {
       cidade: normalizar(f.cidade),
-      bairro: normalizar(f.bairro || f.cidade),
+      bairro: normalizar(f.bairro && f.bairro.trim() ? f.bairro : f.cidade) || normalizar(f.cidade),
       slug: normalizar(f.nome),
     }
   }))
@@ -243,7 +243,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const farmacia = TODAS.find(f =>
     normalizar(f.cidade) === params.cidade &&
-    normalizar(f.bairro || f.cidade) === params.bairro &&
+    (normalizar(f.bairro && f.bairro.trim() ? f.bairro : f.cidade) || normalizar(f.cidade)) === params.bairro &&
     normalizar(f.nome) === params.slug
   )
   if (!farmacia) return { notFound: true }
