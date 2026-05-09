@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { FARMACIAS_SEED, REDES_INFO } from '../../../lib/farmacias-seed'
-import { REMEDIOS } from '../../../lib/data'
-import farmaciasColetadas from '../../../lib/farmacias-coletadas.json'
+import { FARMACIAS_SEED, REDES_INFO } from '../../lib/farmacias-seed'
+import { REMEDIOS } from '../../lib/data'
+import farmaciasColetadas from '../../lib/farmacias-coletadas.json'
 
 const TODAS = [...FARMACIAS_SEED, ...farmaciasColetadas]
 const OG = 'linear-gradient(135deg,#ff6b1a,#ff4500)'
