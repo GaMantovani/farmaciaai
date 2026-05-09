@@ -1,8 +1,8 @@
 // pages/farmacia/[placeId].js — Página SEO de cada farmácia
 import Head from 'next/head'
 import Link from 'next/link'
-import { FARMACIAS_SEED, REDES_INFO } from '../../lib/farmacias-seed'
-import { REMEDIOS } from '../../lib/data'
+import { FARMACIAS_SEED, REDES_INFO } from '../../../lib/farmacias-seed'
+import { REMEDIOS } from '../../../lib/data'
 
 const OrangeGrad = 'linear-gradient(135deg,#ff6b1a,#ff4500)'
 
