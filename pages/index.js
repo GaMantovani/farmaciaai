@@ -114,11 +114,25 @@ export default function Home() {
   const [farmaciasProximas, setFarmaciasProximas] = useState(null)
   const [mostrarFarmacias, setMostrarFarmacias] = useState(false)
   const [mostrarTodos, setMostrarTodos] = useState(false)
+  const [cepSalvo, setCepSalvo] = useState(null)
   const inputRef = useRef(null)
 
   function maskCEP(v) {
     const n = v.replace(/\D/g,'').slice(0,8)
     return n.length > 5 ? n.slice(0,5)+'-'+n.slice(5) : n
+  }
+
+  async function salvarCep() {
+    const limpo = cep.replace(/\D/g,'')
+    if (limpo.length !== 8) return
+    try {
+      const res = await fetch('https://viacep.com.br/ws/'+limpo+'/json/')
+      const data = await res.json()
+      if (!data.erro) {
+        setCepSalvo({ cep: cep, cidade: data.localidade, estado: data.uf })
+        buscarFarmaciasProximas(cep)
+      }
+    } catch(e) {}
   }
 
   async function buscarFarmaciasProximas(cepVal) {
@@ -210,7 +224,7 @@ export default function Home() {
 
       {/* TOP BAR */}
       <div style={{ background:'var(--primary)', color:'var(--primary-foreground)', fontSize:12, padding:'6px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <span>📍 {localizacao ? `${localizacao.cidade}, ${localizacao.estado}` : 'Digite seu CEP para ver ofertas locais'}</span>
+        <span>📍 {cepSalvo ? `${cepSalvo.cidade}, ${cepSalvo.estado}` : localizacao ? `${localizacao.cidade}, ${localizacao.estado}` : 'Digite seu CEP para ver ofertas locais'}</span>
         <span className="hide-mobile">Compare em +150 farmácias · Economize até 70%</span>
       </div>
 
@@ -299,6 +313,35 @@ export default function Home() {
                 ))}
               </div>
               {erro && <p style={{ marginTop:12, fontSize:13, color:'#ffd4be' }}>⚠️ {erro}</p>}
+
+              {/* CEP BLOCK */}
+              <div style={{ marginTop:16, display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,.15)', backdropFilter:'blur(8px)', borderRadius:16, padding:8, maxWidth:500, margin:'16px auto 0' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="2" style={{ flexShrink:0, marginLeft:6 }}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                {cepSalvo ? (
+                  <span style={{ flex:1, fontSize:13, color:'#fff', textAlign:'left' }}>
+                    Entregando em <strong>{cepSalvo.cidade}/{cepSalvo.estado}</strong> · CEP {cepSalvo.cep}
+                  </span>
+                ) : (
+                  <input type="text" value={cep} maxLength={9}
+                    onChange={e => handleCEPChange(e.target.value)}
+                    placeholder="Informe seu CEP para ver ofertas próximas"
+                    style={{ flex:1, height:36, background:'transparent', border:'none', fontSize:13, color:'#fff', outline:'none', '::placeholder': { color:'rgba(255,255,255,.7)' } }} />
+                )}
+                {cepSalvo ? (
+                  <button onClick={() => { setCepSalvo(null); setCep('') }}
+                    style={{ fontSize:12, fontWeight:700, background:'rgba(255,255,255,.2)', color:'#fff', border:'none', padding:'6px 12px', borderRadius:10, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                    Alterar
+                  </button>
+                ) : (
+                  <button onClick={() => salvarCep()}
+                    style={{ fontSize:13, fontWeight:700, background:'var(--card)', color:'var(--primary)', border:'none', padding:'7px 16px', borderRadius:10, cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
+                    ✓ Usar CEP
+                  </button>
+                )}
+              </div>
+              <p style={{ marginTop:8, fontSize:11, color:'rgba(255,255,255,.7)' }}>
+                <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noreferrer" style={{ color:'rgba(255,255,255,.8)', textDecoration:'underline' }}>Não sei meu CEP</a>
+              </p>
             </div>
           </div>
         </section>
@@ -330,7 +373,7 @@ export default function Home() {
               style={{ height:44, padding:'0 20px', background:'var(--primary)', color:'var(--primary-foreground)', border:'none', borderRadius:12, fontSize:14, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'inherit' }}>
               {loading ? '...' : 'Buscar →'}
             </button>
-            <button onClick={() => { setResultados(null); setMostrarFarmacias(false); setRemedio(''); setTimeout(() => inputRef.current?.focus(), 100) }}
+            <button onClick={() => { setResultados(null); setFarmaciasProximas(null); setMostrarFarmacias(false); setRemedio(''); setQuery(''); setErro(null); setTimeout(() => inputRef.current?.focus(), 100) }}
               style={{ height:44, padding:'0 14px', background:'var(--secondary)', color:'var(--muted-foreground)', border:'none', borderRadius:12, fontSize:13, cursor:'pointer', fontFamily:'inherit' }}>
               ✕
             </button>
