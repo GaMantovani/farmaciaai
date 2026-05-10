@@ -87,9 +87,10 @@ function ResultTable({ resultados, remedio }) {
       <div style={{ background:'linear-gradient(135deg,#fff8f5,#fff3ee)',border:'2px solid #ff5a00',borderRadius:16,padding:'20px 24px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:16 }}>
         <div style={{ display:'flex',alignItems:'center',gap:16 }}>
           <div style={{ background:OG,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:100,whiteSpace:'nowrap',flexShrink:0 }}>MENOR PREÇO</div>
+          {melhor.imagem && <img src={melhor.imagem} alt={melhor.medicamento} style={{ width:56,height:56,objectFit:'contain',borderRadius:8,background:'#fff',padding:4 }} />}
           <div>
             <div style={{ fontSize:16,fontWeight:700,color:'#222' }}>{melhor.farmacia}</div>
-            <div style={{ fontSize:13,color:'#666',marginTop:2 }}>{melhor.nome}</div>
+            <div style={{ fontSize:13,color:'#666',marginTop:2 }}>{melhor.medicamento}</div>
           </div>
         </div>
         <div style={{ display:'flex',alignItems:'center',gap:20 }}>
@@ -116,9 +117,12 @@ function ResultTable({ resultados, remedio }) {
           <div key={i} style={{ display:'grid',gridTemplateColumns:'auto 1fr auto auto',alignItems:'center',padding:'12px 20px',gap:14,borderBottom:'1px solid #f9f9f9',background:i===0?'#fff9f7':'#fff',transition:'background .1s' }}
             onMouseOver={e=>e.currentTarget.style.background='#fffaf9'}
             onMouseOut={e=>e.currentTarget.style.background=i===0?'#fff9f7':'#fff'}>
-            {/* IMAGEM/EMOJI DA FARMÁCIA */}
-            <div style={{ width:36,height:36,borderRadius:8,background:r.logo_cor+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0 }}>
-              💊
+            {/* IMAGEM DO REMÉDIO */}
+            <div style={{ width:52,height:52,borderRadius:10,background:'#f8f9fb',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,overflow:'hidden',border:'1px solid #f0f0f0' }}>
+              {r.imagem
+                ? <img src={r.imagem} alt={r.medicamento} style={{ width:48,height:48,objectFit:'contain' }} onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex'}} />
+                : null}
+              <div style={{ width:48,height:48,display:r.imagem?'none':'flex',alignItems:'center',justifyContent:'center',fontSize:22 }}>💊</div>
             </div>
             <div>
               <div style={{ fontSize:14,fontWeight:600,color:'#222',display:'flex',alignItems:'center',gap:6 }}>
