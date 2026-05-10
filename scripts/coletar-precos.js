@@ -205,9 +205,6 @@ async function main() {
   console.log('🚀 Coleta via Google Shopping — ' + MEDICAMENTOS.length + ' medicamentos')
   console.log('Estimativa: ~' + Math.ceil(MEDICAMENTOS.length * 2) + ' minutos\n')
 
-  console.log('Limpando tabela...')
-  await supabase.from('precos').delete().gte('id', 0)
-
   const todos = []
 
   for (let i = 0; i < MEDICAMENTOS.length; i++) {
