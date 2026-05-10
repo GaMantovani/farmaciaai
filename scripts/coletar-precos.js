@@ -2,7 +2,7 @@ const https = require('https')
 const ws = require('ws')
 const { createClient } = require('@supabase/supabase-js')
 
-const APIFY_TOKEN = 'apify_api_vmjbQpgi4hhyvA9RC8JJ7hqkdyEk6V0uj8jv'
+const APIFY_TOKEN = process.env.APIFY_TOKEN || 'apify_api_vmjbQpgi4hhyvA9RC8JJ7hqkdyEk6V0uj8jv'
 const ACTOR_ID = 'JWEHgf5HWeoLlbchr'
 
 const supabase = createClient(
