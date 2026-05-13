@@ -35,3 +35,4 @@ next-env.d.ts
 dados_anvisa.csv
 lib/farmacias-coletadas.json
 .vercel
+lib/redirects-farmacias.json

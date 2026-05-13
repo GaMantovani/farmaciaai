@@ -1,45 +1,93 @@
-// pages/sitemap.xml.js — Sitemap dinâmico gerado automaticamente
-import { CIDADES, REMEDIOS } from '../lib/data'
+// pages/sitemap.xml.js
+import { getSupabase } from '../lib/supabase'
 
-const BASE = 'https://farmaciaai.com.br'
+function norm(str) {
+  if (!str) return ''
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
 
-function generateSitemap() {
-  const urls = []
-
-  // Páginas estáticas
-  urls.push({ loc: BASE, priority: '1.0', changefreq: 'daily' })
-  urls.push({ loc: `${BASE}/cidades`, priority: '0.8', changefreq: 'weekly' })
-  urls.push({ loc: `${BASE}/remedios`, priority: '0.8', changefreq: 'weekly' })
-
-  // Páginas de cidade
-  CIDADES.forEach(c => {
-    urls.push({ loc: `${BASE}/cidade/${c.slug}`, priority: '0.7', changefreq: 'weekly' })
-  })
-
-  // Páginas SEO programático: remédio × cidade
-  REMEDIOS.forEach(r => {
-    CIDADES.forEach(c => {
-      urls.push({ loc: `${BASE}/remedio/${r.slug}/${c.slug}`, priority: '0.6', changefreq: 'daily' })
-    })
-  })
-
+function generateSitemap(urls) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url>
-    <loc>${u.loc}</loc>
-    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+${urls.map(({ url, lastmod, changefreq, priority }) => `  <url>
+    <loc>${url}</loc>
+    ${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}
+    <changefreq>${changefreq || 'weekly'}</changefreq>
+    <priority>${priority || '0.5'}</priority>
   </url>`).join('\n')}
 </urlset>`
 }
 
-export default function Sitemap() { return null }
-
 export async function getServerSideProps({ res }) {
+  const supabase = getSupabase()
+  const base = 'https://farmaciaai.com.br'
+  const today = new Date().toISOString().split('T')[0]
+  const urls = []
+
+  // Páginas estáticas
+  urls.push({ url: `${base}/`, changefreq: 'daily', priority: '1.0', lastmod: today })
+  urls.push({ url: `${base}/cidades`, changefreq: 'weekly', priority: '0.8', lastmod: today })
+  urls.push({ url: `${base}/remedios`, changefreq: 'weekly', priority: '0.8', lastmod: today })
+  urls.push({ url: `${base}/bulas`, changefreq: 'weekly', priority: '0.8', lastmod: today })
+
+  // Cidades
+  const { data: cidades } = await supabase
+    .from('farmacias_fisicas')
+    .select('cidade, estado')
+    .not('cidade', 'is', null)
+    .order('cidade')
+  
+  const cidadesUnicas = [...new Map(cidades?.map(c => [`${c.cidade}-${c.estado}`, c]) || []).values()]
+  cidadesUnicas.forEach(c => {
+    urls.push({
+      url: `${base}/cidade/${norm(c.cidade)}-${c.estado.toLowerCase()}`,
+      changefreq: 'weekly',
+      priority: '0.7',
+      lastmod: today
+    })
+  })
+
+  // Remédios
+  const { data: remedios } = await supabase
+    .from('medicamentos')
+    .select('slug')
+    .not('slug', 'is', null)
+
+  remedios?.forEach(r => {
+    urls.push({
+      url: `${base}/remedio/${r.slug}`,
+      changefreq: 'weekly',
+      priority: '0.6',
+      lastmod: today
+    })
+  })
+
+  // Bulas
+  const { data: bulas } = await supabase
+    .from('bulas')
+    .select('slug')
+    .not('slug', 'is', null)
+
+  bulas?.forEach(b => {
+    urls.push({
+      url: `${base}/bula/${b.slug}`,
+      changefreq: 'monthly',
+      priority: '0.6',
+      lastmod: today
+    })
+  })
+
+  const sitemap = generateSitemap(urls)
+
   res.setHeader('Content-Type', 'text/xml')
-  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate')
-  res.write(generateSitemap())
+  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+  res.write(sitemap)
   res.end()
+
   return { props: {} }
 }
+
+export default function Sitemap() {}
