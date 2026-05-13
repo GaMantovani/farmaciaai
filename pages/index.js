@@ -5,18 +5,18 @@ import Link from 'next/link'
 import { CIDADES, REMEDIOS } from '../lib/data'
 
 const CATEGORIAS = [
-  { id:'gripe', label:'Gripe & Resfriado', query:'amoxicilina' },
-  { id:'dor', label:'Dor & Febre', query:'dipirona' },
-  { id:'diabetes', label:'Diabetes', query:'metformina' },
-  { id:'pressao', label:'Pressão Alta', query:'losartana' },
-  { id:'antibiotico', label:'Antibióticos', query:'azitromicina' },
-  { id:'vitaminas', label:'Vitaminas', query:'vitamina c' },
-  { id:'dermocosmeticos', label:'Dermocosméticos', query:'isotretinoina' },
-  { id:'mulher', label:'Saúde da Mulher', query:'progesterona' },
-  { id:'infantil', label:'Infantil', query:'paracetamol gotas' },
-  { id:'genericos', label:'Genéricos', query:'dipirona 500mg' },
-  { id:'alergia', label:'Alergia', query:'cetirizina' },
-  { id:'estomago', label:'Estômago', query:'omeprazol' },
+  { id:'gripe', label:'Gripe & Resfriado', queries:['amoxicilina','ibuprofeno','paracetamol','nimesulida','cetirizina','loratadina'] },
+  { id:'dor', label:'Dor & Febre', queries:['dipirona','ibuprofeno','paracetamol','nimesulida','tramadol','codeina'] },
+  { id:'diabetes', label:'Diabetes', queries:['metformina','glibenclamida','insulina','sitagliptina','glicazida','empagliflozina'] },
+  { id:'pressao', label:'Pressão Alta', queries:['losartana','enalapril','captopril','atenolol','amlodipina','hidroclorotiazida'] },
+  { id:'antibiotico', label:'Antibióticos', queries:['azitromicina','amoxicilina','ciprofloxacino','cefalexina','doxiciclina','claritromicina'] },
+  { id:'vitaminas', label:'Vitaminas', queries:['vitamina c','vitamina d','complexo b','zinco','magnesio','omega 3'] },
+  { id:'dermocosmeticos', label:'Dermocosméticos', queries:['isotretinoina','adapaleno','tretinoina','clindamicina','benzoil peroxido','acido retinoico'] },
+  { id:'mulher', label:'Saúde da Mulher', queries:['progesterona','estradiol','anticoncepcional','acido folico','fluconazol','metronidazol'] },
+  { id:'infantil', label:'Infantil', queries:['paracetamol gotas','ibuprofeno gotas','dipirona gotas','amoxicilina suspensao','dexametasona','prednisolona'] },
+  { id:'genericos', label:'Genéricos', queries:['dipirona 500mg','omeprazol 20mg','losartana 50mg','atenolol 25mg','metformina 850mg','atorvastatina 20mg'] },
+  { id:'alergia', label:'Alergia', queries:['cetirizina','loratadina','desloratadina','fexofenadina','hidroxizina','dexclorfeniramina'] },
+  { id:'estomago', label:'Estômago', queries:['omeprazol','pantoprazol','ranitidina','domperidona','metoclopramida','buscopan'] },
 ]
 
 function MedImg({ src, alt, className }) {
@@ -33,7 +33,7 @@ function ResultCard({ offer, rank }) {
 
   return (
     <article style={{
-      position:'relative', display:'flex', alignItems:'center', gap:16,
+      position:'relative', display:'flex', alignItems:'center', gap:10,
       borderRadius:16, border: isBest ? '1.5px solid var(--primary)' : '1px solid var(--border)',
       background:'var(--card)', padding:'16px 20px',
       transition:'all .2s', cursor:'pointer',
@@ -44,7 +44,7 @@ function ResultCard({ offer, rank }) {
 
       {/* RANK */}
       <div style={{
-        width:40, height:40, borderRadius:'50%', flexShrink:0,
+        width:32, height:32, borderRadius:'50%', flexShrink:0,
         background: isBest ? 'var(--primary)' : 'var(--secondary)',
         display:'flex', alignItems:'center', justifyContent:'center',
         fontSize:15, fontWeight:700,
@@ -54,7 +54,7 @@ function ResultCard({ offer, rank }) {
       </div>
 
       {/* IMAGEM */}
-      <div style={{ width:80, height:80, borderRadius:12, overflow:'hidden', background:'var(--secondary)', flexShrink:0 }}>
+      <div style={{ width:60, height:60, borderRadius:10, overflow:'hidden', background:'var(--secondary)', flexShrink:0 }}>
         <MedImg src={offer.imagem} alt={offer.medicamento} className="" />
       </div>
 
@@ -62,14 +62,14 @@ function ResultCard({ offer, rank }) {
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:2 }}>
           <span style={{ width:10, height:10, borderRadius:'50%', background: offer.logo_cor || 'var(--primary)', flexShrink:0, display:'inline-block' }} />
-          <span style={{ fontSize:13, fontWeight:600, color:'var(--foreground)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{offer.farmacia}</span>
+          <span style={{ fontSize:12, fontWeight:600, color:'var(--foreground)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{offer.farmacia}</span>
           {isBest && (
             <span style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', background:'oklch(0.95 0.06 140)', color:'oklch(0.45 0.16 145)', padding:'2px 8px', borderRadius:100, whiteSpace:'nowrap' }}>
               Melhor preço
             </span>
           )}
         </div>
-        <h3 style={{ fontSize:15, fontWeight:700, color:'var(--foreground)', marginBottom:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{offer.medicamento}</h3>
+        <h3 style={{ fontSize:14, fontWeight:700, color:'var(--foreground)', marginBottom:2, lineHeight:1.3 }}>{offer.medicamento}</h3>
         <div style={{ display:'flex', alignItems:'center', gap:12, fontSize:12, color:'var(--muted-foreground)' }}>
           <span>⭐ {(4.5 + Math.random() * 0.4).toFixed(1)}</span>
           <span>🚚 Entrega online</span>
@@ -115,6 +115,11 @@ export default function Home() {
   const [mostrarFarmacias, setMostrarFarmacias] = useState(false)
   const [mostrarTodos, setMostrarTodos] = useState(false)
   const [cepSalvo, setCepSalvo] = useState(null)
+  const [catAtiva, setCatAtiva] = useState(null)
+  const [catPage, setCatPage] = useState(0)
+  const [bulaInfo, setBulaInfo] = useState(null)
+  const [bulaExpanded, setBulaExpanded] = useState(false)
+  const [ordem, setOrdem] = useState('preco')
   const inputRef = useRef(null)
 
   function maskCEP(v) {
@@ -170,13 +175,24 @@ export default function Home() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setResultados(data.resultados || [])
+      setBulaInfo(null)
+      setBulaExpanded(false)
+      try {
+        const nomeQuery = encodeURIComponent(q.trim().split(' ')[0].toUpperCase())
+        const bulaRes = await fetch(`https://lbatmgvrqvjchbodzymy.supabase.co/rest/v1/bulas?select=id,nome_limpo,slug,html_conteudo,empresa&nome_limpo=ilike.${nomeQuery}%25&html_conteudo=not.is.null&limit=1`, {
+          headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiYXRtZ3ZycXZqY2hib2R6eW15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNDQwMDEsImV4cCI6MjA5MzkyMDAwMX0.qRZ6rs0Eu55xDNqaHNlASjuxDCLXB9kzbO8ySNgvbPo' }
+        })
+        const bulaData = await bulaRes.json()
+        if (bulaData && bulaData[0]) setBulaInfo(bulaData[0])
+      } catch(err) {}
       setLocalizacao(data.localizacao)
     } catch(e) { setErro(e.message || 'Erro ao buscar.') }
     finally { setLoading(false) }
   }
 
   const temResultados = loading || resultados !== null
-  const visiveis = resultados ? (mostrarTodos ? resultados : resultados.slice(0, 6)) : []
+  const resultadosOrdenados = resultados ? [...resultados].sort((a,b) => ordem === 'preco' ? a.preco - b.preco : (b.vendidos||0) - (a.vendidos||0)) : []
+  const visiveis = resultadosOrdenados ? (mostrarTodos ? resultadosOrdenados : resultadosOrdenados.slice(0, 6)) : []
   const melhor = resultados?.[0]
   const economia = resultados?.length > 1 ? (resultados[resultados.length-1].preco - resultados[0].preco).toFixed(2).replace('.',',') : null
 
@@ -225,7 +241,7 @@ export default function Home() {
       {/* TOP BAR */}
       <div style={{ background:'var(--primary)', color:'var(--primary-foreground)', fontSize:12, padding:'6px 20px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <span>📍 {cepSalvo ? `${cepSalvo.cidade}, ${cepSalvo.estado}` : localizacao ? `${localizacao.cidade}, ${localizacao.estado}` : 'Digite seu CEP para ver ofertas locais'}</span>
-        <span className="hide-mobile">Compare em +150 farmácias · Economize até 70%</span>
+        <span style={{ display:"none" }}>Compare em +150 farmácias · Economize até 70%</span>
       </div>
 
       {/* NAV */}
@@ -235,23 +251,45 @@ export default function Home() {
             <img src="/logo.png" alt="FarmáciaAí" style={{ height:38 }} />
           </Link>
           <div style={{ flex:1 }} />
-          <Link href="/cidades" style={{ fontSize:14, color:'var(--muted-foreground)' }}>Cidades</Link>
-          <Link href="/remedios" style={{ fontSize:14, color:'var(--muted-foreground)' }}>Remédios</Link>
+          <Link href="/cidades" style={{ fontSize:14, color:'var(--muted-foreground)', display:'flex', alignItems:'center', gap:4 }}>🏥 Farmácias</Link>
+          <Link href="/remedios" style={{ fontSize:14, color:'var(--muted-foreground)', display:'flex', alignItems:'center', gap:4 }}>💊 Remédios</Link>
+          <Link href="/bulas" style={{ fontSize:14, color:'var(--muted-foreground)', display:'flex', alignItems:'center', gap:4 }}>📋 Bulas</Link>
         </div>
 
         {/* CATEGORIAS */}
-        <nav style={{ borderTop:'1px solid var(--border)', background:'var(--background)', overflowX:'auto' }}>
-          <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 20px', display:'flex', gap:2, height:40, alignItems:'center' }}>
-            {CATEGORIAS.map(c => (
-              <button key={c.id} onClick={() => buscar(c.query)}
-                style={{ fontSize:13, color:'var(--muted-foreground)', background:'none', border:'none', padding:'4px 12px', borderRadius:100, cursor:'pointer', whiteSpace:'nowrap', transition:'all .12s', fontFamily:'inherit' }}
-                onMouseOver={e => { e.currentTarget.style.background='var(--accent)'; e.currentTarget.style.color='var(--accent-foreground)' }}
-                onMouseOut={e => { e.currentTarget.style.background='none'; e.currentTarget.style.color='var(--muted-foreground)' }}>
-                {c.label}
-              </button>
-            ))}
+        <nav style={{ borderTop:'1px solid var(--border)', background:'var(--background)' }}>
+          <div style={{ maxWidth:1200, margin:'0 auto', padding:'4px 8px', display:'flex', alignItems:'center', gap:4 }}>
+            <button onClick={() => setCatPage(p => Math.max(0, p-1))} disabled={catPage===0}
+              style={{ flexShrink:0, width:32, height:32, borderRadius:'50%', border:'none', background:'var(--primary)', color:'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', opacity: catPage===0 ? 0.3 : 1, fontSize:18, fontWeight:'bold' }}>
+              ‹
+            </button>
+            <div style={{ flex:1, display:'flex', gap:4, overflow:'hidden' }}>
+              {CATEGORIAS.slice(catPage*4, catPage*4+4).map(cat => (
+                <button key={cat.id} onClick={() => setCatAtiva(catAtiva?.id === cat.id ? null : cat)}
+                  style={{ flex:1, fontSize:11, color: catAtiva?.id===cat.id ? 'var(--primary-foreground)' : 'var(--muted-foreground)', background: catAtiva?.id===cat.id ? 'var(--primary)' : 'none', border:'1px solid var(--border)', padding:'5px 4px', borderRadius:8, cursor:'pointer', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', transition:'all .12s', fontFamily:'inherit', fontWeight: catAtiva?.id===cat.id ? 600 : 400 }}>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setCatPage(p => Math.min(Math.ceil(CATEGORIAS.length/4)-1, p+1))} disabled={catPage>=Math.ceil(CATEGORIAS.length/4)-1}
+              style={{ flexShrink:0, width:32, height:32, borderRadius:'50%', border:'none', background:'var(--primary)', color:'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', opacity: catPage>=Math.ceil(CATEGORIAS.length/4)-1 ? 0.3 : 1, fontSize:18, fontWeight:'bold' }}>
+              ›
+            </button>
           </div>
         </nav>
+        {catAtiva && (
+          <div style={{ background:'var(--accent)', borderBottom:'1px solid var(--border)', padding:'8px 20px', overflowX:'auto' }}>
+            <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+              <span style={{ fontSize:12, color:'var(--muted-foreground)', fontWeight:600, marginRight:4 }}>{catAtiva.label}:</span>
+              {catAtiva.queries.map(q => (
+                <button key={q} onClick={() => { buscar(q); setCatAtiva(null) }}
+                  style={{ fontSize:13, padding:'4px 14px', borderRadius:100, border:'1px solid var(--border)', background:'var(--card)', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* HERO */}
@@ -431,14 +469,36 @@ export default function Home() {
                     </p>
                   </div>
                   <div style={{ display:'flex', gap:8 }}>
-                    {['Menor preço','Mais vendido'].map((f,i) => (
-                      <button key={f} style={{ padding:'7px 16px', borderRadius:100, fontSize:13, fontWeight:600, cursor:'pointer', border:'none', fontFamily:'inherit', background: i===0 ? 'var(--foreground)' : 'var(--secondary)', color: i===0 ? 'var(--background)' : 'var(--foreground)', transition:'all .15s' }}>
-                        {f}
+                    {[['preco','Menor preço'],['vendidos','Mais vendido']].map(([val,label]) => (
+                      <button key={val} onClick={() => setOrdem(val)} style={{ padding:'7px 16px', borderRadius:100, fontSize:13, fontWeight:600, cursor:'pointer', border:'none', fontFamily:'inherit', background: ordem===val ? 'var(--foreground)' : 'var(--secondary)', color: ordem===val ? 'var(--background)' : 'var(--foreground)', transition:'all .15s' }}>
+                        {label}
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {bulaInfo && (
+                  <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, padding:'16px 20px', marginBottom:16 }}>
+                    <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'var(--primary)', marginBottom:6 }}>💊 Sobre o medicamento</div>
+                    <p style={{ fontSize:14, color:'var(--muted-foreground)', lineHeight:1.6 }}>
+                      {bulaInfo.html_conteudo
+                        ? bulaInfo.html_conteudo.slice(0, bulaExpanded ? 800 : 200) + '...'
+                        : 'Informações sobre este medicamento em breve.'}
+                    </p>
+                    <div style={{ display:'flex', gap:8, marginTop:10, flexWrap:'wrap' }}>
+                      {bulaInfo.html_conteudo && (
+                        <button onClick={() => setBulaExpanded(prev => !prev)}
+                          style={{ fontSize:12, color:'var(--primary)', background:'none', border:'1px solid var(--primary)', padding:'4px 12px', borderRadius:100, cursor:'pointer', fontFamily:'inherit' }}>
+                          {bulaExpanded ? 'Ver menos ↑' : 'Ver mais ↓'}
+                        </button>
+                      )}
+                      <a href={'/bula/' + bulaInfo.slug}
+                        style={{ fontSize:12, color:'var(--primary-foreground)', background:'var(--primary)', padding:'4px 12px', borderRadius:100, textDecoration:'none' }}>
+                        Bula completa →
+                      </a>
+                    </div>
+                  </div>
+                )}
                 <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                   {visiveis.map((r, i) => <ResultCard key={i} offer={r} rank={i} />)}
                 </div>
