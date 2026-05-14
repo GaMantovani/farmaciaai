@@ -14,20 +14,21 @@ export async function getServerSideProps({ res }) {
 
   const supabase = getSupabase()
 
-  // Contagem de farmácias para sitemap de farmácias
-  const { count: countFarmacias } = await supabase
-    .from('farmacias_fisicas')
-    .select('id', { count: 'exact', head: true })
-    .not('nome', 'is', null)
-    .not('cidade', 'is', null)
-
-  const totalPagesFarmacias = Math.ceil((countFarmacias || 75000) / 1000)
-
-  // Contagem de páginas remédio×cidade
-  const [{ data: precosData }, { data: cidadesData }] = await Promise.all([
+  // Contagens em paralelo
+  const [
+    { count: countFarmacias },
+    { count: countProdutos },
+    { data: precosData },
+    { data: cidadesData },
+  ] = await Promise.all([
+    supabase.from('farmacias_fisicas').select('id', { count: 'exact', head: true }).not('nome', 'is', null).not('cidade', 'is', null),
+    supabase.from('produtos').select('id', { count: 'exact', head: true }).not('slug', 'is', null).gt('slug', ''),
     supabase.from('precos').select('medicamento'),
     supabase.rpc('cidades_agrupadas'),
   ])
+
+  const totalPagesFarmacias = Math.ceil((countFarmacias || 75000) / 1000)
+  const totalPagesProdutos = Math.ceil((countProdutos || 28000) / 1000)
 
   const totalMeds = new Set(
     (precosData || []).map(p => norm(p.medicamento)).filter(s => s && s.length > 2)
@@ -46,6 +47,11 @@ export async function getServerSideProps({ res }) {
     <lastmod>${today}</lastmod>
   </sitemap>`).join('\n')
 
+  const produtosSitemaps = Array.from({ length: totalPagesProdutos }, (_, i) => `  <sitemap>
+    <loc>${base}/api/sitemap-produtos?page=${i + 1}</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>`).join('\n')
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
@@ -54,6 +60,7 @@ export async function getServerSideProps({ res }) {
   </sitemap>
 ${farmaciasSitemaps}
 ${remediosCidadeSitemaps}
+${produtosSitemaps}
 </sitemapindex>`
 
   res.setHeader('Content-Type', 'text/xml')

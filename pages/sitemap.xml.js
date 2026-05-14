@@ -32,6 +32,7 @@ export async function getServerSideProps({ res }) {
   urls.push({ url: `${base}/cidades`, changefreq: 'weekly', priority: '0.8', lastmod: today })
   urls.push({ url: `${base}/remedios`, changefreq: 'weekly', priority: '0.8', lastmod: today })
   urls.push({ url: `${base}/bulas`, changefreq: 'weekly', priority: '0.8', lastmod: today })
+  urls.push({ url: `${base}/produtos`, changefreq: 'weekly', priority: '0.7', lastmod: today })
 
   // Cidades
   const { data: cidades } = await supabase

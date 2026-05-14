@@ -1,7 +1,8 @@
-// pages/produtos.js — lista de todos os produtos com código EAN
+// pages/produtos.js — lista de produtos com paginação server-side por letra
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { getSupabase } from '../lib/supabase'
 
 const OG = 'linear-gradient(135deg,#ff6b1a,#ff4500)'
@@ -24,15 +25,19 @@ function formatarNome(nome) {
 
 const LETRAS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
-export default function Produtos({ produtos, total }) {
+export default function Produtos({ produtos, total, letraAtual, countLetra }) {
+  const router = useRouter()
   const [busca, setBusca] = useState('')
-  const [letraSelecionada, setLetraSelecionada] = useState('')
 
-  const filtrados = produtos.filter(p => {
-    const matchBusca = busca.length < 2 || norm(p.nome).includes(norm(busca))
-    const matchLetra = !letraSelecionada || p.nome.toUpperCase().startsWith(letraSelecionada)
-    return matchBusca && matchLetra
-  })
+  const filtrados = busca.length >= 2
+    ? produtos.filter(p => norm(p.nome).includes(norm(busca)) || p.ean.includes(busca))
+    : produtos
+
+  function irParaLetra(l) {
+    setBusca('')
+    if (l && l !== letraAtual) router.push(`/produtos?letra=${l}`)
+    else router.push('/produtos')
+  }
 
   return (
     <>
@@ -40,6 +45,11 @@ export default function Produtos({ produtos, total }) {
         <title>Produtos de Farmácia de A a Z — {total.toLocaleString('pt-BR')} produtos | FarmáciaAí</title>
         <meta name="description" content={`Catálogo com ${total.toLocaleString('pt-BR')} produtos de farmácia. Consulte por EAN, marca ou categoria.`} />
         <link rel="canonical" href="https://farmaciaai.com.br/produtos" />
+        <meta property="og:title" content={`Produtos de Farmácia — ${total.toLocaleString('pt-BR')} produtos | FarmáciaAí`} />
+        <meta property="og:description" content={`Catálogo com ${total.toLocaleString('pt-BR')} produtos de farmácia. Consulte por EAN, marca ou categoria.`} />
+        <meta property="og:url" content="https://farmaciaai.com.br/produtos" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FarmáciaAí" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
       </Head>
@@ -81,26 +91,22 @@ export default function Produtos({ produtos, total }) {
 
       <div style={{ background: '#fff', borderBottom: '1px solid #efefef', padding: '10px 20px', position: 'sticky', top: 60, zIndex: 50 }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          <button onClick={() => setLetraSelecionada('')}
+          <button onClick={() => irParaLetra('')}
             style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif',
-              borderColor: letraSelecionada === '' ? ACCENT : '#e0e0e0',
-              background: letraSelecionada === '' ? '#fff3ee' : '#fff',
-              color: letraSelecionada === '' ? ACCENT : '#777' }}>
-            Todos
+              borderColor: letraAtual === '' ? ACCENT : '#e0e0e0',
+              background: letraAtual === '' ? '#fff3ee' : '#fff',
+              color: letraAtual === '' ? ACCENT : '#777' }}>
+            Recentes
           </button>
-          {LETRAS.map(l => {
-            const tem = produtos.some(p => p.nome.toUpperCase().startsWith(l))
-            return (
-              <button key={l} onClick={() => tem && setLetraSelecionada(l === letraSelecionada ? '' : l)}
-                style={{ padding: '4px 9px', borderRadius: 6, border: '1px solid', fontSize: 12, fontWeight: 600, cursor: tem ? 'pointer' : 'default', fontFamily: 'DM Sans,sans-serif',
-                  borderColor: letraSelecionada === l ? ACCENT : tem ? '#e0e0e0' : '#f5f5f5',
-                  background: letraSelecionada === l ? '#fff3ee' : '#fff',
-                  color: letraSelecionada === l ? ACCENT : tem ? '#555' : '#ccc',
-                  opacity: tem ? 1 : 0.5 }}>
-                {l}
-              </button>
-            )
-          })}
+          {LETRAS.map(l => (
+            <button key={l} onClick={() => irParaLetra(l)}
+              style={{ padding: '4px 9px', borderRadius: 6, border: '1px solid', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,sans-serif',
+                borderColor: letraAtual === l ? ACCENT : '#e0e0e0',
+                background: letraAtual === l ? '#fff3ee' : '#fff',
+                color: letraAtual === l ? ACCENT : '#555' }}>
+              {l}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -108,17 +114,21 @@ export default function Produtos({ produtos, total }) {
         {filtrados.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0', color: '#aaa' }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
-            <div style={{ fontSize: 16 }}>Nenhum produto encontrado para "{busca}"</div>
+            <div style={{ fontSize: 16 }}>Nenhum produto encontrado{busca.length >= 2 ? ` para "${busca}"` : ''}</div>
           </div>
         ) : (
           <>
             <div style={{ fontSize: 13, color: '#aaa', marginBottom: 16 }}>
               {filtrados.length.toLocaleString('pt-BR')} produto{filtrados.length !== 1 ? 's' : ''}
-              {letraSelecionada && ` com a letra ${letraSelecionada}`}
+              {letraAtual && ` com a letra ${letraAtual}`}
+              {!letraAtual && ' adicionados recentemente'}
               {busca.length >= 2 && ` para "${busca}"`}
+              {countLetra > produtos.length && !busca && (
+                <span> · <span style={{ color: '#bbb' }}>mostrando {produtos.length.toLocaleString('pt-BR')} de {countLetra.toLocaleString('pt-BR')}</span></span>
+              )}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 8 }}>
-              {filtrados.slice(0, 2000).map(p => (
+              {filtrados.map(p => (
                 <Link key={p.slug} href={`/produto/${p.slug}`}
                   style={{ background: '#fff', border: '1px solid #efefef', borderRadius: 12, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ minWidth: 0 }}>
@@ -129,11 +139,6 @@ export default function Produtos({ produtos, total }) {
                 </Link>
               ))}
             </div>
-            {filtrados.length > 2000 && (
-              <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#aaa' }}>
-                Exibindo 2.000 de {filtrados.length.toLocaleString('pt-BR')} resultados. Use a busca para refinar.
-              </div>
-            )}
           </>
         )}
       </div>
@@ -145,22 +150,40 @@ export default function Produtos({ produtos, total }) {
   )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps({ query, res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400')
+
+  const letra = (query.letra || '').toUpperCase().replace(/[^A-Z]/, '').slice(0, 1)
   const supabase = getSupabase()
-  let all = []
-  let from = 0
-  while (true) {
-    const { data, error } = await supabase
-      .from('produtos')
-      .select('ean, nome, slug')
-      .order('nome')
-      .range(from, from + 999)
-    if (error || !data || data.length === 0) break
-    all = all.concat(data)
-    if (data.length < 1000) break
-    from += 1000
+
+  const [{ count: total }, resultado] = await Promise.all([
+    supabase.from('produtos').select('id', { count: 'exact', head: true }),
+    (() => {
+      let q = supabase
+        .from('produtos')
+        .select('ean, nome, slug')
+        .not('slug', 'is', null)
+        .gt('slug', '')
+      if (letra) q = q.ilike('nome', `${letra}%`).order('nome')
+      else q = q.order('criado_em', { ascending: false })
+      return q.limit(500)
+    })(),
+  ])
+
+  const { count: countLetra } = letra
+    ? await supabase.from('produtos').select('id', { count: 'exact', head: true }).ilike('nome', `${letra}%`)
+    : { count: resultado.data?.length || 0 }
+
+  const produtos = (resultado.data || [])
+    .filter(p => p.nome && p.nome.length > 2 && p.slug)
+    .map(p => ({ ean: p.ean || '', nome: p.nome, slug: p.slug }))
+
+  return {
+    props: {
+      produtos,
+      total: total || 0,
+      letraAtual: letra,
+      countLetra: countLetra || produtos.length,
+    },
   }
-  const produtos = all.map(p => ({ ean: p.ean || '', nome: p.nome || '', slug: p.slug || '' }))
-    .filter(p => p.nome.length > 2 && p.slug)
-  return { props: { produtos, total: produtos.length }, revalidate: 86400 }
 }
