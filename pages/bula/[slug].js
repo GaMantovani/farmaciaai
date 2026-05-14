@@ -77,7 +77,7 @@ function formatarTexto(texto) {
   return result.filter(s => s.conteudo && s.conteudo.length > 20)
 }
 
-export default function BulaPage({ bula }) {
+export default function BulaPage({ bula, remediosComPreco }) {
   if (!bula) return (
     <div style={{ textAlign:'center', padding:60 }}>
       <h1>Bula nao encontrada</h1>
@@ -198,6 +198,26 @@ export default function BulaPage({ bula }) {
           </div>
         )}
 
+        {remediosComPreco && remediosComPreco.length > 0 && (
+          <div style={{ background:'#fff',border:'1px solid #f0f0f0',borderRadius:16,padding:'20px 24px',marginBottom:16 }}>
+            <h2 style={{ fontSize:15,fontWeight:700,color:'#111',marginBottom:4 }}>
+              Comparar preço de {nome}
+            </h2>
+            <p style={{ fontSize:13,color:'#aaa',marginBottom:14 }}>Veja preços em farmácias online e economize</p>
+            <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
+              {remediosComPreco.map(r => (
+                <Link key={r.slug} href={`/remedio/${r.slug}`}
+                  style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#f7f8fa',borderRadius:10,fontSize:13,color:'#333',border:'1px solid transparent',transition:'all .12s' }}
+                  onMouseOver={e => { e.currentTarget.style.borderColor=ACCENT; e.currentTarget.style.background='#fff3ee'; e.currentTarget.style.color=ACCENT }}
+                  onMouseOut={e => { e.currentTarget.style.borderColor='transparent'; e.currentTarget.style.background='#f7f8fa'; e.currentTarget.style.color='#333' }}>
+                  <span>{r.nome}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ background:'linear-gradient(135deg,#fff8f5,#fff3ee)',border:'1px solid #ffd4be',borderRadius:20,padding:'26px 28px',marginBottom:32 }}>
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:16 }}>
             <div>
@@ -238,5 +258,18 @@ export async function getStaticProps({ params }) {
     .single()
 
   if (error || !data) return { notFound: true }
-  return { props: { bula: data }, revalidate: 86400 }
+
+  const nomeBase = (data.nome_limpo || data.nome_medicamento || '').split(/\s+/).slice(0, 2).join(' ')
+  const { data: meds } = nomeBase
+    ? await supabase
+        .from('medicamentos')
+        .select('slug, nome')
+        .ilike('nome', `${nomeBase}%`)
+        .eq('tem_preco', true)
+        .limit(5)
+    : { data: [] }
+
+  const remediosComPreco = (meds || []).map(m => ({ slug: m.slug, nome: m.nome }))
+
+  return { props: { bula: data, remediosComPreco }, revalidate: 86400 }
 }

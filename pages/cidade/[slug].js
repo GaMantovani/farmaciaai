@@ -133,6 +133,45 @@ export default function CidadePage({ cidade, estado, farmacias, bairros }) {
           </div>
         )}
 
+        <div style={{ background:'#fff',border:'1px solid #f0f0f0',borderRadius:16,padding:'20px 24px',marginBottom:16 }}>
+          <h2 style={{ fontSize:16,fontWeight:700,color:'#111',marginBottom:4 }}>
+            Remédios mais buscados em {cidade}
+          </h2>
+          <p style={{ fontSize:13,color:'#aaa',marginBottom:16 }}>Compare preços online e veja farmácias próximas</p>
+          <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(170px,1fr))',gap:8 }}>
+            {[
+              {nome:'Dipirona',slug:'dipirona'},
+              {nome:'Amoxicilina',slug:'amoxicilina'},
+              {nome:'Ibuprofeno',slug:'ibuprofeno'},
+              {nome:'Paracetamol',slug:'paracetamol'},
+              {nome:'Azitromicina',slug:'azitromicina'},
+              {nome:'Omeprazol',slug:'omeprazol'},
+              {nome:'Rivotril',slug:'rivotril'},
+              {nome:'Levotiroxina',slug:'levotiroxina'},
+              {nome:'Metformina',slug:'metformina-500mg'},
+              {nome:'Losartana',slug:'losartana'},
+              {nome:'Clonazepam',slug:'clonazepam'},
+              {nome:'Sinvastatina',slug:'sinvastatina'},
+              {nome:'Atorvastatina',slug:'atorvastatina'},
+              {nome:'Fluoxetina',slug:'fluoxetina-20mg'},
+              {nome:'Ciprofloxacino',slug:'ciprofloxacino'},
+              {nome:'Prednisona',slug:'prednisona'},
+              {nome:'Minoxidil',slug:'minoxidil'},
+              {nome:'Vitamina D',slug:'vitamina-d-2000ui'},
+              {nome:'Sildenafila',slug:'sildenafila-50mg'},
+              {nome:'Pantoprazol',slug:'pantoprazol'},
+            ].map(m => (
+              <Link key={m.slug} href={`/remedio/${m.slug}/${cidadeSlug}`}
+                style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',background:'#f7f8fa',borderRadius:10,fontSize:13,color:'#333',border:'1px solid transparent',transition:'all .12s' }}
+                onMouseOver={e => { e.currentTarget.style.borderColor=ACCENT; e.currentTarget.style.background='#fff3ee'; e.currentTarget.style.color=ACCENT }}
+                onMouseOut={e => { e.currentTarget.style.borderColor='transparent'; e.currentTarget.style.background='#f7f8fa'; e.currentTarget.style.color='#333' }}>
+                {m.nome}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         <div style={{ background:'linear-gradient(135deg,#fff8f5,#fff3ee)',border:'1px solid #ffd4be',borderRadius:20,padding:'28px 32px',marginTop:16 }}>
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:16 }}>
             <div>
