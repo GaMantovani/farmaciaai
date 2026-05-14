@@ -8,29 +8,72 @@ const ACCENT = '#ff4500'
 
 function getNome(bula) {
   if (bula.nome_limpo) return bula.nome_limpo
-  // Pega so o nome comercial (antes do nome da empresa)
-  const palavras = bula.nome_medicamento.split(' ')
-  const idx = palavras.findIndex(p => p.match(/LTDA|S.A|SA$|FARMAC|LABOR|QUIMICA/i))
-  return idx > 0 ? palavras.slice(0, idx).join(' ') : palavras.slice(0,2).join(' ')
+  const palavras = bula.nome_medicamento.split(/\s+/)
+  const idx = palavras.findIndex(p => /LTDA|S\.A\b|^SA$|FARMAC|LABOR|QUIMICA|INDUSTRIA|COMERCIO/i.test(p))
+  return idx > 0 ? palavras.slice(0, idx).join(' ') : palavras.slice(0, 3).join(' ')
+}
+
+// Limpa o campo empresa removendo palavras que são parte do nome do medicamento
+function normStr(s) {
+  return (s || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+// Remove palavras do remédio que aparecem no início do campo empresa
+function limparEmpresa(empresa, nomeLimpo) {
+  if (!empresa) return ''
+  if (!nomeLimpo) return empresa
+  const refWords = new Set(nomeLimpo.split(/\s+/).filter(w => w.length > 2).map(normStr))
+  const palavras = empresa.split(/\s+/)
+  let inicio = 0
+  while (inicio < palavras.length && refWords.has(normStr(palavras[inicio]))) inicio++
+  const resultado = palavras.slice(inicio).join(' ').trim()
+  return resultado.length > 5 ? resultado : empresa
 }
 
 function formatarTexto(texto) {
   if (!texto) return []
-  // Divide por padrao "numero. TITULO" onde numero eh 1-2 digitos seguido de espaco e maiusculas
-  const textoLimpo = texto.split("Hist").shift() || texto
-  const partes = textoLimpo.split(/(?<=\s)(?=[1-9]\d?\.\s+[A-Z]{2})/)
+
+  // Corta o histórico de revisões no final (ruído)
+  const semHistorico = texto.split(/\b(Hist[oó]rico de Revis|HISTÓRICO DE REVIS)/i)[0]
+
+  // Divide em: preamble (antes de INFORMAÇÕES) + corpo (seções numeradas)
+  const infoMatch = semHistorico.search(/INFORMA[ÇC][ÕO]ES\s+(AO PACIENTE|T[ÉE]CNICAS)/i)
+  const preamble = infoMatch > 0 ? semHistorico.slice(0, infoMatch) : ''
+  const corpo = infoMatch > 0
+    ? semHistorico.slice(infoMatch).replace(/^INFORMA[ÇC][ÕO]ES\s+(AO PACIENTE|T[ÉE]CNICAS\s+AOS\s+PROFISSIONAIS\s+DE\s+SA[ÚU]DE)\s*/i, '')
+    : semHistorico
+
   const result = []
+
+  // Extrai blocos do preamble: APRESENTAÇÃO e COMPOSIÇÃO
+  if (preamble) {
+    const apMatch = preamble.match(/APRESENTA[ÇC][ÕO]ES?\s+(.+?)(?=COMPOSI[ÇC][ÃA]O|USO\s+(ORAL|ADULTO|PEDIAT|TOPIC|INJECT)|$)/si)
+    if (apMatch) {
+      const conteudo = apMatch[1].replace(/USO\s+(ORAL|ADULTO|PEDI[ÁA]TRICO|T[ÓO]PICO|INJET[ÁA]VEL)[^\n]*/gi, '').trim()
+      if (conteudo.length > 15) result.push({ titulo: 'Apresentação', conteudo })
+    }
+
+    const compMatch = preamble.match(/COMPOSI[ÇC][ÃA]O\s+(.+?)(?=INFORMA[ÇC]|USO\s+(ORAL|ADULTO)|$)/si)
+    if (compMatch && compMatch[1].trim().length > 15) {
+      result.push({ titulo: 'Composição', conteudo: compMatch[1].trim() })
+    }
+  }
+
+  // Divide o corpo nas seções numeradas
+  const partes = corpo.split(/(?<=\s|^)(?=[1-9]\d?\.\s+[A-ZÁÉÍÓÚ]{2})/m)
   for (const parte of partes) {
     const p = parte.trim()
     if (!p || p.length < 20) continue
-    // Verifica se comeca com numero de secao
-    const match = p.match(/^([1-9]\d?\.\s+[A-Z][^?]+\?)(.+)$/s)
+    // Título: "1. PARA QUE ESTE MEDICAMENTO É INDICADO?" ou "1. INDICAÇÕES"
+    const match = p.match(/^(\d{1,2}\.\s+[^\n]+?)\s{2,}(.+)$/s) ||
+                  p.match(/^(\d{1,2}\.\s+[^?]+\?)\s*(.+)$/s)
     if (match) {
       result.push({ titulo: match[1].trim(), conteudo: match[2].trim() })
-    } else {
+    } else if (p.length > 20) {
       result.push({ titulo: null, conteudo: p })
     }
   }
+
   return result.filter(s => s.conteudo && s.conteudo.length > 20)
 }
 
@@ -43,13 +86,14 @@ export default function BulaPage({ bula }) {
   )
 
   const nome = getNome(bula)
+  const empresa = limparEmpresa(bula.empresa, bula.nome_limpo)
   const secoes = formatarTexto(bula.html_conteudo)
 
   return (
     <>
       <Head>
-        <title>Bula {nome} {bula.empresa ? `- ${bula.empresa}` : ''} | FarmaciaAi</title>
-        <meta name="description" content={`Bula completa do ${nome}${bula.empresa ? ` fabricado por ${bula.empresa}` : ''}. Indicacoes, contraindicacoes e posologia.`} />
+        <title>Bula {nome}{empresa ? ` — ${empresa}` : ''} | FarmáciaAí</title>
+        <meta name="description" content={`Bula completa do ${nome}${empresa ? ` fabricado por ${empresa}` : ''}. Indicações, contraindicações e posologia.`} />
         <link rel="canonical" href={`https://farmaciaai.com.br/bula/${bula.slug}`} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
@@ -76,7 +120,7 @@ export default function BulaPage({ bula }) {
             {nome}
           </h1>
           <div style={{ display:'flex',gap:10,flexWrap:'wrap' }}>
-            {bula.empresa && <span style={{ background:'rgba(255,255,255,.2)',color:'#fff',fontSize:13,padding:'4px 12px',borderRadius:100 }}>{bula.empresa}</span>}
+            {empresa && <span style={{ background:'rgba(255,255,255,.2)',color:'#fff',fontSize:13,padding:'4px 12px',borderRadius:100 }}>{empresa}</span>}
             {bula.principio_ativo && <span style={{ background:'rgba(255,255,255,.2)',color:'#fff',fontSize:13,padding:'4px 12px',borderRadius:100 }}>{bula.principio_ativo}</span>}
           </div>
         </div>
@@ -86,8 +130,8 @@ export default function BulaPage({ bula }) {
         <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:12,marginBottom:32 }}>
           {[
             ['Medicamento', nome],
-            ...(bula.empresa && bula.nome_medicamento && !bula.nome_medicamento.toUpperCase().includes(bula.empresa.substring(0,8).toUpperCase()) ? [['Fabricante', bula.empresa]] : []),
-            ...(bula.principio_ativo ? [['Principio ativo', bula.principio_ativo]] : []),
+            ...(empresa ? [['Fabricante', empresa]] : []),
+            ...(bula.principio_ativo ? [['Princípio ativo', bula.principio_ativo]] : []),
             ...(bula.numero_registro ? [['Registro ANVISA', bula.numero_registro]] : []),
           ].map(([label,value]) => (
             <div key={label} style={{ background:'#fff',border:'1px solid #f0f0f0',borderRadius:14,padding:'14px 16px' }}>
