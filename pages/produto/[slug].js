@@ -89,6 +89,7 @@ export default function ProdutoPage({ produto, relacionados }) {
         <meta property="og:description" content={`${nome}${marca ? ` - ${marca}` : ''}. EAN ${produto.ean}.`} />
         <meta property="og:url" content={`https://farmaciaai.com.br/produto/${produto.slug}`} />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FarmáciaAí" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />

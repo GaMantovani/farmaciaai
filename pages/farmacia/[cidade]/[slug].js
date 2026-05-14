@@ -76,6 +76,11 @@ export default function FarmaciaPage({ farmacia, outrasNaCidade }) {
         <title>{farmacia.nome}{farmacia.bairro ? ` em ${farmacia.bairro}` : ''}, {farmacia.cidade} — FarmáciaAí</title>
         <meta name="description" content={`${farmacia.nome}${farmacia.bairro ? ` no ${farmacia.bairro}` : ''}, ${farmacia.cidade}, ${farmacia.estado}.${endereco ? ` Endereço: ${endereco}.` : ''} Compare preços de remédios.`} />
         <link rel="canonical" href={`https://farmaciaai.com.br/farmacia/${norm(farmacia.cidade)}/${slugFarmacia(farmacia)}`} />
+        <meta property="og:title" content={`${farmacia.nome}${farmacia.bairro ? ` em ${farmacia.bairro}` : ''}, ${farmacia.cidade} | FarmáciaAí`} />
+        <meta property="og:description" content={`${farmacia.nome}${farmacia.bairro ? ` no ${farmacia.bairro}` : ''}, ${farmacia.cidade}, ${farmacia.estado}.${endereco ? ` Endereço: ${endereco}.` : ''} Compare preços de remédios.`} />
+        <meta property="og:url" content={`https://farmaciaai.com.br/farmacia/${norm(farmacia.cidade)}/${slugFarmacia(farmacia)}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FarmáciaAí" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />

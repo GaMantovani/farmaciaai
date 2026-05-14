@@ -23,6 +23,11 @@ export default function Cidades({ porEstado, total }) {
         <title>Farmácias por cidade no Brasil — FarmáciaAí</title>
         <meta name="description" content={`Encontre farmácias e compare preços de remédios em ${total.toLocaleString('pt-BR')} farmácias em todo o Brasil.`} />
         <link rel="canonical" href="https://farmaciaai.com.br/cidades" />
+        <meta property="og:title" content="Farmácias por cidade no Brasil | FarmáciaAí" />
+        <meta property="og:description" content={`Encontre farmácias e compare preços de remédios em ${total.toLocaleString('pt-BR')} farmácias em todo o Brasil.`} />
+        <meta property="og:url" content="https://farmaciaai.com.br/cidades" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FarmáciaAí" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
       </Head>

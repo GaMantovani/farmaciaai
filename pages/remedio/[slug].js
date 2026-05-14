@@ -92,6 +92,11 @@ export default function RemedioPage({ medicamento, precos, slug }) {
         <title>{medicamento} — Compare preços em {precos.length} farmácias | FarmáciaAí</title>
         <meta name="description" content={`Compare o preço do ${medicamento} em ${precos.length} farmácias. Menor preço: R$ ${melhor?.preco?.toFixed(2).replace('.',',')} na ${melhor?.farmacia}. Economize até R$ ${economia}.`} />
         <link rel="canonical" href={`https://farmaciaai.com.br/remedio/${slug}`} />
+        <meta property="og:title" content={`${medicamento} — Compare preços em ${precos.length} farmácias | FarmáciaAí`} />
+        <meta property="og:description" content={`Compare o preço do ${medicamento} em ${precos.length} farmácias. Menor preço: R$ ${melhor?.preco?.toFixed(2).replace('.',',')} na ${melhor?.farmacia}.`} />
+        <meta property="og:url" content={`https://farmaciaai.com.br/remedio/${slug}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FarmáciaAí" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaProduct) }} />

@@ -202,6 +202,24 @@ export default function Home() {
         <title>FarmáciaAí · Compare preços de remédios e economize</title>
         <meta name="description" content="Compare preços de remédios em mais de 150 farmácias e economize até 70%. Os melhores descontos da sua região." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="canonical" href="https://farmaciaai.com.br" />
+        <meta property="og:title" content="FarmáciaAí · Compare preços de remédios e economize" />
+        <meta property="og:description" content="Compare preços de remédios em mais de 150 farmácias e economize até 70%. Os melhores descontos da sua região." />
+        <meta property="og:url" content="https://farmaciaai.com.br" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FarmáciaAí" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          'name': 'FarmáciaAí',
+          'url': 'https://farmaciaai.com.br',
+          'description': 'Compare preços de remédios em mais de 150 farmácias online do Brasil.',
+          'potentialAction': {
+            '@type': 'SearchAction',
+            'target': { '@type': 'EntryPoint', 'urlTemplate': 'https://farmaciaai.com.br/?q={search_term_string}' },
+            'query-input': 'required name=search_term_string',
+          },
+        }) }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet" />
         <style>{`
