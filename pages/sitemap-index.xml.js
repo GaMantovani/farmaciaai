@@ -18,24 +18,17 @@ export async function getServerSideProps({ res }) {
   const [
     { count: countFarmacias },
     { count: countProdutos },
-    { data: precosData },
-    { data: cidadesData },
+    { count: countMeds },
   ] = await Promise.all([
     supabase.from('farmacias_fisicas').select('id', { count: 'exact', head: true }).not('nome', 'is', null).not('cidade', 'is', null),
     supabase.from('produtos').select('id', { count: 'exact', head: true }).not('slug', 'is', null).gt('slug', ''),
-    supabase.from('precos').select('medicamento'),
-    supabase.rpc('cidades_agrupadas'),
+    supabase.from('medicamentos').select('id', { count: 'exact', head: true }).eq('tem_preco', true),
   ])
 
   const totalPagesFarmacias = Math.ceil((countFarmacias || 75000) / 1000)
   const totalPagesProdutos = Math.ceil((countProdutos || 28000) / 1000)
-
-  const totalMeds = new Set(
-    (precosData || []).map(p => norm(p.medicamento)).filter(s => s && s.length > 2)
-  ).size
-
-  const totalCidades = Object.values(cidadesData || {}).reduce((sum, arr) => sum + arr.length, 0)
-  const totalPagesRemediosCidade = Math.ceil((totalMeds * totalCidades) / 1000)
+  // 10 meds × ~4992 cidades = ~49.920 URLs por arquivo
+  const totalPagesRemediosCidade = Math.ceil((countMeds || 661) / 10)
 
   const farmaciasSitemaps = Array.from({ length: totalPagesFarmacias }, (_, i) => `  <sitemap>
     <loc>${base}/api/sitemap-farmacias?page=${i + 1}</loc>
@@ -43,7 +36,7 @@ export async function getServerSideProps({ res }) {
   </sitemap>`).join('\n')
 
   const remediosCidadeSitemaps = Array.from({ length: totalPagesRemediosCidade }, (_, i) => `  <sitemap>
-    <loc>${base}/api/sitemap-remedios-cidade?page=${i + 1}</loc>
+    <loc>${base}/api/sitemap-remedio-cidade?page=${i}</loc>
     <lastmod>${today}</lastmod>
   </sitemap>`).join('\n')
 
