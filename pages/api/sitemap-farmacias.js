@@ -26,7 +26,9 @@ export default async function handler(req, res) {
     .select('nome, bairro, cidade, estado')
     .not('nome', 'is', null)
     .not('cidade', 'is', null)
-    .limit(10000)
+    .not('estado', 'is', null)
+    .gt('nome', '')
+    .filter('nome', 'not.ilike', 'pagina%')
     .range(from, from + perPage - 1)
 
   if (!farmacias || farmacias.length === 0) {
