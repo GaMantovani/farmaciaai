@@ -280,6 +280,41 @@ export default function RemedioPage({ medicamento, precos, slug }) {
           </p>
         </div>
 
+        {/* CIDADES */}
+        <div style={{ background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, padding:'20px 24px', marginBottom:24 }}>
+          <h2 style={{ fontSize:17, fontWeight:700, color:'#111', marginBottom:4 }}>
+            Comprar {medicamento} por cidade
+          </h2>
+          <p style={{ fontSize:13, color:'#aaa', marginBottom:16 }}>Compare preços e veja farmácias próximas em cada cidade</p>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:8 }}>
+            {[
+              { nome:'São Paulo', slug:'sao-paulo-sp' },
+              { nome:'Rio de Janeiro', slug:'rio-de-janeiro-rj' },
+              { nome:'Belo Horizonte', slug:'belo-horizonte-mg' },
+              { nome:'Curitiba', slug:'curitiba-pr' },
+              { nome:'Porto Alegre', slug:'porto-alegre-rs' },
+              { nome:'Recife', slug:'recife-pe' },
+              { nome:'Fortaleza', slug:'fortaleza-ce' },
+              { nome:'Salvador', slug:'salvador-ba' },
+              { nome:'Goiânia', slug:'goiania-go' },
+              { nome:'Campinas', slug:'campinas-sp' },
+              { nome:'Guarulhos', slug:'guarulhos-sp' },
+              { nome:'Manaus', slug:'manaus-am' },
+              { nome:'Natal', slug:'natal-rn' },
+              { nome:'Maceió', slug:'maceio-al' },
+              { nome:'Belém', slug:'belem-pa' },
+            ].map(c => (
+              <Link key={c.slug} href={`/remedio/${slug}/${c.slug}`}
+                style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 12px', background:'#f7f8fa', borderRadius:10, fontSize:13, color:'#333', border:'1px solid transparent', transition:'all .12s' }}
+                onMouseOver={e => { e.currentTarget.style.borderColor=ACCENT; e.currentTarget.style.background='#fff3ee'; e.currentTarget.style.color=ACCENT }}
+                onMouseOut={e => { e.currentTarget.style.borderColor='transparent'; e.currentTarget.style.background='#f7f8fa'; e.currentTarget.style.color='#333' }}>
+                {c.nome}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* FOOTER NAV */}
         <div style={{ display:'flex', justifyContent:'center', gap:12, flexWrap:'wrap' }}>
           <Link href="/" style={{ fontSize:13, color:ACCENT, border:'1px solid #ffb89a', padding:'8px 16px', borderRadius:10 }}>← Comparar outro remédio</Link>

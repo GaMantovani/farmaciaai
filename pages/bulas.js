@@ -1,7 +1,8 @@
-// pages/bulas.js — busca bulas do Supabase
+// pages/bulas.js — busca bulas com paginação server-side por letra
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { getSupabase } from '../lib/supabase'
 
 const OG = 'linear-gradient(135deg,#ff6b1a,#ff4500)'
@@ -10,17 +11,26 @@ const ACCENT = '#ff4500'
 function norm(str) {
   if (!str) return ''
   return str.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 }
 
-export default function BulasPage({ bulas, total }) {
+const LETRAS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+export default function BulasPage({ bulas, total, letraAtual, countLetra }) {
+  const router = useRouter()
   const [busca, setBusca] = useState('')
 
-  const filtradas = busca.length < 2
-    ? bulas
-    : bulas.filter(b => norm(b.nome_medicamento).includes(norm(busca)) || norm(b.nome_limpo||'').includes(norm(busca)))
+  const filtradas = busca.length >= 2
+    ? bulas.filter(b => norm(b.nome_limpo || b.nome_medicamento).includes(norm(busca)))
+    : bulas
+
+  function irParaLetra(l) {
+    setBusca('')
+    if (l && l !== letraAtual) router.push(`/bulas?letra=${l}`)
+    else router.push('/bulas')
+  }
 
   return (
     <>
@@ -72,21 +82,47 @@ export default function BulasPage({ bulas, total }) {
         </div>
       </div>
 
+      <div style={{ background:'#fff',borderBottom:'1px solid #efefef',padding:'10px 20px',position:'sticky',top:60,zIndex:50 }}>
+        <div style={{ maxWidth:1100,margin:'0 auto',display:'flex',flexWrap:'wrap',gap:4 }}>
+          <button onClick={() => irParaLetra('')}
+            style={{ padding:'4px 10px',borderRadius:6,border:'1px solid',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans,sans-serif',
+              borderColor:letraAtual===''?ACCENT:'#e0e0e0',
+              background:letraAtual===''?'#fff3ee':'#fff',
+              color:letraAtual===''?ACCENT:'#777' }}>
+            Com texto
+          </button>
+          {LETRAS.map(l => (
+            <button key={l} onClick={() => irParaLetra(l)}
+              style={{ padding:'4px 9px',borderRadius:6,border:'1px solid',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans,sans-serif',
+                borderColor:letraAtual===l?ACCENT:'#e0e0e0',
+                background:letraAtual===l?'#fff3ee':'#fff',
+                color:letraAtual===l?ACCENT:'#555' }}>
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div style={{ maxWidth:1100,margin:'0 auto',padding:'28px 20px 72px' }}>
         {filtradas.length === 0 ? (
           <div style={{ textAlign:'center',padding:'60px 0',color:'#aaa' }}>
             <div style={{ fontSize:32,marginBottom:12 }}>📄</div>
-            <div style={{ fontSize:16 }}>Nenhuma bula encontrada para "{busca}"</div>
+            <div style={{ fontSize:16 }}>Nenhuma bula encontrada{busca.length>=2 ? ` para "${busca}"` : ''}</div>
           </div>
         ) : (
           <>
             <div style={{ fontSize:13,color:'#aaa',marginBottom:16 }}>
               {filtradas.length.toLocaleString('pt-BR')} bula{filtradas.length!==1?'s':''}
+              {letraAtual && ` com a letra ${letraAtual}`}
+              {!letraAtual && ' com texto disponível'}
               {busca.length>=2 && ` para "${busca}"`}
+              {countLetra > bulas.length && !busca && (
+                <span> · <span style={{ color:'#bbb' }}>mostrando {bulas.length.toLocaleString('pt-BR')} de {countLetra.toLocaleString('pt-BR')}</span></span>
+              )}
             </div>
             <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:8 }}>
               {filtradas.map(b => (
-                <Link key={b.id} href={`/bula/${b.slug}`}
+                <Link key={b.slug} href={`/bula/${b.slug}`}
                   style={{ background:'#fff',border:'1px solid #efefef',borderRadius:12,padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',transition:'border-color .12s,box-shadow .12s' }}
                   onMouseOver={e => { e.currentTarget.style.borderColor=ACCENT; e.currentTarget.style.boxShadow='0 2px 10px rgba(255,69,0,.1)' }}
                   onMouseOut={e => { e.currentTarget.style.borderColor='#efefef'; e.currentTarget.style.boxShadow='none' }}>
@@ -112,28 +148,45 @@ export default function BulasPage({ bulas, total }) {
   )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps({ query, res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400')
+
+  const letra = (query.letra || '').toUpperCase().replace(/[^A-Z]/, '').slice(0, 1)
   const supabase = getSupabase()
-  let all = []
-  let from = 0
-  while (true) {
-    const { data, error } = await supabase
-      .from('bulas')
-      .select('id, nome_medicamento, nome_limpo, empresa, slug, html_conteudo')
-      .order('nome_medicamento')
-      .range(from, from + 999)
-    if (error || !data || data.length === 0) break
-    all = all.concat(data)
-    if (data.length < 1000) break
-    from += 1000
+
+  const [{ count: total }, resultado] = await Promise.all([
+    supabase.from('bulas').select('id', { count: 'exact', head: true }),
+    (() => {
+      let q = supabase
+        .from('bulas')
+        .select('nome_medicamento, nome_limpo, empresa, slug, html_conteudo')
+        .order('nome_medicamento')
+      if (letra) q = q.ilike('nome_medicamento', `${letra}%`)
+      else q = q.not('html_conteudo', 'is', null)
+      return q.limit(500)
+    })(),
+  ])
+
+  const { count: countLetra } = letra
+    ? await supabase.from('bulas').select('id', { count: 'exact', head: true }).ilike('nome_medicamento', `${letra}%`)
+    : { count: resultado.data?.length || 0 }
+
+  const bulas = (resultado.data || [])
+    .filter(b => b.slug)
+    .map(b => ({
+      nome_medicamento: b.nome_medicamento || '',
+      nome_limpo: b.nome_limpo || '',
+      empresa: b.empresa || '',
+      slug: b.slug,
+      html_conteudo: !!b.html_conteudo,
+    }))
+
+  return {
+    props: {
+      bulas,
+      total: total || 0,
+      letraAtual: letra,
+      countLetra: countLetra || bulas.length,
+    },
   }
-  const bulas = all.map(b => ({
-    id: b.id,
-    nome_medicamento: b.nome_medicamento||'',
-    nome_limpo: b.nome_limpo||'',
-    empresa: b.empresa||'',
-    slug: b.slug||'',
-    html_conteudo: !!b.html_conteudo,
-  }))
-  return { props: { bulas, total: bulas.length }, revalidate: 86400 }
 }
