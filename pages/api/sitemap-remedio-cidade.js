@@ -37,10 +37,11 @@ export default async function handler(req, res) {
     }
   }
 
+  const today = new Date().toISOString().split('T')[0]
   const linhas = []
   for (const med of medsResult.data) {
     for (const cidade of cidades) {
-      linhas.push(`<url><loc>https://farmaciaai.com.br/remedio/${med.slug}/${cidade}</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>`)
+      linhas.push(`<url><loc>https://farmaciaai.com.br/remedio/${med.slug}/${cidade}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`)
     }
   }
 
