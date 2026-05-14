@@ -1,7 +1,8 @@
-// pages/remedios.js — lista medicamentos reais do Supabase
+// pages/remedios.js — lista medicamentos com paginação server-side por letra
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 import { getSupabase } from '../lib/supabase'
 
 const OG = 'linear-gradient(135deg,#ff6b1a,#ff4500)'
@@ -10,22 +11,26 @@ const ACCENT = '#ff4500'
 function norm(str) {
   if (!str) return ''
   return str.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 }
 
 const LETRAS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
-export default function Remedios({ medicamentos, total }) {
+export default function Remedios({ medicamentos, total, letraAtual, countLetra }) {
+  const router = useRouter()
   const [busca, setBusca] = useState('')
-  const [letraSelecionada, setLetraSelecionada] = useState('')
 
-  const filtrados = medicamentos.filter(m => {
-    const matchBusca = busca.length < 2 || norm(m.nome).includes(norm(busca))
-    const matchLetra = !letraSelecionada || m.nome.toUpperCase().startsWith(letraSelecionada)
-    return matchBusca && matchLetra
-  })
+  const filtrados = busca.length >= 2
+    ? medicamentos.filter(m => norm(m.nome).includes(norm(busca)))
+    : medicamentos
+
+  function irParaLetra(l) {
+    setBusca('')
+    if (l && l !== letraAtual) router.push(`/remedios?letra=${l}`)
+    else router.push('/remedios')
+  }
 
   return (
     <>
@@ -79,26 +84,22 @@ export default function Remedios({ medicamentos, total }) {
 
       <div style={{ background:'#fff',borderBottom:'1px solid #efefef',padding:'10px 20px',position:'sticky',top:60,zIndex:50 }}>
         <div style={{ maxWidth:1100,margin:'0 auto',display:'flex',flexWrap:'wrap',gap:4 }}>
-          <button onClick={() => setLetraSelecionada('')}
+          <button onClick={() => irParaLetra('')}
             style={{ padding:'4px 10px',borderRadius:6,border:'1px solid',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans,sans-serif',
-              borderColor:letraSelecionada===''?ACCENT:'#e0e0e0',
-              background:letraSelecionada===''?'#fff3ee':'#fff',
-              color:letraSelecionada===''?ACCENT:'#777' }}>
-            Todos
+              borderColor:letraAtual===''?ACCENT:'#e0e0e0',
+              background:letraAtual===''?'#fff3ee':'#fff',
+              color:letraAtual===''?ACCENT:'#777' }}>
+            Com preço
           </button>
-          {LETRAS.map(l => {
-            const tem = medicamentos.some(m => m.nome.toUpperCase().startsWith(l))
-            return (
-              <button key={l} onClick={() => tem && setLetraSelecionada(l===letraSelecionada?'':l)}
-                style={{ padding:'4px 9px',borderRadius:6,border:'1px solid',fontSize:12,fontWeight:600,cursor:tem?'pointer':'default',fontFamily:'DM Sans,sans-serif',
-                  borderColor:letraSelecionada===l?ACCENT:tem?'#e0e0e0':'#f5f5f5',
-                  background:letraSelecionada===l?'#fff3ee':'#fff',
-                  color:letraSelecionada===l?ACCENT:tem?'#555':'#ccc',
-                  opacity:tem?1:0.5 }}>
-                {l}
-              </button>
-            )
-          })}
+          {LETRAS.map(l => (
+            <button key={l} onClick={() => irParaLetra(l)}
+              style={{ padding:'4px 9px',borderRadius:6,border:'1px solid',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:'DM Sans,sans-serif',
+                borderColor:letraAtual===l?ACCENT:'#e0e0e0',
+                background:letraAtual===l?'#fff3ee':'#fff',
+                color:letraAtual===l?ACCENT:'#555' }}>
+              {l}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -106,14 +107,18 @@ export default function Remedios({ medicamentos, total }) {
         {filtrados.length === 0 ? (
           <div style={{ textAlign:'center',padding:'60px 0',color:'#aaa' }}>
             <div style={{ fontSize:32,marginBottom:12 }}>💊</div>
-            <div style={{ fontSize:16 }}>Nenhum medicamento encontrado para "{busca}"</div>
+            <div style={{ fontSize:16 }}>Nenhum medicamento encontrado{busca.length>=2 ? ` para "${busca}"` : ''}</div>
           </div>
         ) : (
           <>
             <div style={{ fontSize:13,color:'#aaa',marginBottom:16 }}>
               {filtrados.length.toLocaleString('pt-BR')} medicamento{filtrados.length!==1?'s':''}
-              {letraSelecionada && ` com a letra ${letraSelecionada}`}
+              {letraAtual && ` com a letra ${letraAtual}`}
+              {!letraAtual && ' com preço disponível'}
               {busca.length>=2 && ` para "${busca}"`}
+              {countLetra > medicamentos.length && !busca && (
+                <span> · <span style={{ color:'#bbb' }}>mostrando {medicamentos.length.toLocaleString('pt-BR')} de {countLetra.toLocaleString('pt-BR')}</span></span>
+              )}
             </div>
             <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:8 }}>
               {filtrados.map(m => (
@@ -144,24 +149,43 @@ export default function Remedios({ medicamentos, total }) {
   )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps({ query, res }) {
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400')
+
+  const letra = (query.letra || '').toUpperCase().replace(/[^A-Z]/, '').slice(0, 1)
   const supabase = getSupabase()
-  let all = []
-  let from = 0
-  while (true) {
-    const { data, error } = await supabase
-      .from('medicamentos')
-      .select('id, nome, principio_ativo, slug, tem_preco, tem_bula')
-      .order('nome')
-      .range(from, from + 999)
-    if (error || !data || data.length === 0) break
-    all = all.concat(data)
-    if (data.length < 1000) break
-    from += 1000
-  }
-  const medicamentos = all.map(m => ({
-    id: m.id, nome: m.nome||'', principio_ativo: m.principio_ativo||'',
-    slug: m.slug||norm(m.nome), tem_preco: !!m.tem_preco, tem_bula: !!m.tem_bula,
+
+  const [{ count: total }, resultado] = await Promise.all([
+    supabase.from('medicamentos').select('id', { count: 'exact', head: true }),
+    (() => {
+      let q = supabase
+        .from('medicamentos')
+        .select('nome, principio_ativo, slug, tem_preco, tem_bula')
+        .order('nome')
+      if (letra) q = q.ilike('nome', `${letra}%`)
+      else q = q.eq('tem_preco', true)
+      return q.limit(500)
+    })(),
+  ])
+
+  const { count: countLetra } = letra
+    ? await supabase.from('medicamentos').select('id', { count: 'exact', head: true }).ilike('nome', `${letra}%`)
+    : { count: resultado.data?.length || 0 }
+
+  const medicamentos = (resultado.data || []).map(m => ({
+    nome: m.nome || '',
+    principio_ativo: m.principio_ativo || '',
+    slug: m.slug || norm(m.nome),
+    tem_preco: !!m.tem_preco,
+    tem_bula: !!m.tem_bula,
   }))
-  return { props: { medicamentos, total: medicamentos.length }, revalidate: 86400 }
+
+  return {
+    props: {
+      medicamentos,
+      total: total || 0,
+      letraAtual: letra,
+      countLetra: countLetra || medicamentos.length,
+    },
+  }
 }
