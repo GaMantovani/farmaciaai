@@ -266,7 +266,7 @@ export default function Home() {
       <header style={{ position:'sticky', top:0, zIndex:50, background:'rgba(255,255,255,.95)', backdropFilter:'blur(16px)', borderBottom:'1px solid var(--border)' }}>
         <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 20px', height:60, display:'flex', alignItems:'center', gap:20 }}>
           <Link href="/" onClick={() => { setResultados(null); setMostrarFarmacias(false) }} style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <img src="/logo.png" alt="FarmáciaAí" style={{ height:38 }} />
+            <img src="/logo.png" alt="FarmáciaAí" fetchPriority="high" style={{ height:38 }} />
           </Link>
           <div style={{ flex:1 }} />
           <Link href="/cidades" style={{ fontSize:14, color:'var(--muted-foreground)', display:'flex', alignItems:'center', gap:4 }}>🏥 Farmácias</Link>

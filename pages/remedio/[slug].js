@@ -130,7 +130,7 @@ export default function RemedioPage({ medicamento, precos, slug }) {
       {/* NAV */}
       <nav style={{ position:'sticky', top:0, zIndex:100, background:'rgba(255,255,255,.96)', backdropFilter:'blur(16px)', borderBottom:'1px solid var(--border)' }}>
         <div style={{ maxWidth:1000, margin:'0 auto', padding:'0 20px', height:60, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" style={{ height:38 }} /></Link>
+          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" fetchPriority="high" style={{ height:38 }} /></Link>
           <Link href={`/?q=${encodeURIComponent(medicamento)}`}
             style={{ background:OG, color:'#fff', padding:'8px 20px', borderRadius:10, fontSize:14, fontWeight:700, boxShadow:'0 4px 12px rgba(255,69,0,.25)' }}>
             Comparar preços →

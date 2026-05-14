@@ -128,7 +128,7 @@ export default function BulaPage({ bula, remediosComPreco }) {
 
       <nav style={{ position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,.96)',backdropFilter:'blur(16px)',borderBottom:'1px solid #f0f0f0' }}>
         <div style={{ maxWidth:900,margin:'0 auto',padding:'0 20px',height:60,display:'flex',alignItems:'center',justifyContent:'space-between' }}>
-          <Link href="/"><img src="/logo.png" alt="FarmaciaAi" style={{ height:38 }} /></Link>
+          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" fetchPriority="high" style={{ height:38 }} /></Link>
           <Link href="/" style={{ background:OG,color:'#fff',padding:'8px 18px',borderRadius:10,fontSize:13,fontWeight:700 }}>Comparar precos</Link>
         </div>
       </nav>

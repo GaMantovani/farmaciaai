@@ -97,7 +97,7 @@ export default function FarmaciaPage({ farmacia, outrasNaCidade }) {
 
       <nav style={{ position:'sticky',top:0,zIndex:100,background:'rgba(255,255,255,.96)',backdropFilter:'blur(12px)',borderBottom:'1px solid #f0f0f0' }}>
         <div style={{ maxWidth:1100,margin:'0 auto',padding:'0 20px',height:60,display:'flex',alignItems:'center',justifyContent:'space-between' }}>
-          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" style={{ height:38,width:'auto' }} /></Link>
+          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" fetchPriority="high" style={{ height:38,width:'auto' }} /></Link>
           <Link href="/" style={{ fontSize:14,fontWeight:600,color:'#fff',background:OG,padding:'8px 18px',borderRadius:10 }}>Comparar preços</Link>
         </div>
       </nav>

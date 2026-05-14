@@ -57,7 +57,7 @@ export default function Produtos({ produtos, total, letraAtual, countLetra }) {
 
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #f0f0f0' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" style={{ height: 38 }} /></Link>
+          <Link href="/"><img src="/logo.png" alt="FarmáciaAí" fetchPriority="high" style={{ height: 38 }} /></Link>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
             <Link href="/remedios" style={{ fontSize: 14, color: '#555', fontWeight: 500 }}>Remédios</Link>
             <Link href="/bulas" style={{ fontSize: 14, color: '#555', fontWeight: 500 }}>Bulas</Link>
