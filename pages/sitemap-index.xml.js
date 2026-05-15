@@ -29,6 +29,8 @@ export async function getServerSideProps({ res }) {
   const totalPagesProdutos = Math.ceil((countProdutos || 28000) / 1000)
   // 10 meds × ~4992 cidades = ~49.920 URLs por arquivo
   const totalPagesRemediosCidade = Math.ceil((countMeds || 661) / 10)
+  // 10 produtos × ~4992 cidades = ~49.920 URLs por arquivo
+  const totalPagesProdutosCidade = Math.ceil((countProdutos || 28000) / 10)
 
   const farmaciasSitemaps = Array.from({ length: totalPagesFarmacias }, (_, i) => `  <sitemap>
     <loc>${base}/api/sitemap-farmacias?page=${i + 1}</loc>
@@ -45,6 +47,11 @@ export async function getServerSideProps({ res }) {
     <lastmod>${today}</lastmod>
   </sitemap>`).join('\n')
 
+  const produtosCidadeSitemaps = Array.from({ length: totalPagesProdutosCidade }, (_, i) => `  <sitemap>
+    <loc>${base}/api/sitemap-produto-cidade?page=${i}</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>`).join('\n')
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
@@ -54,6 +61,7 @@ export async function getServerSideProps({ res }) {
 ${farmaciasSitemaps}
 ${remediosCidadeSitemaps}
 ${produtosSitemaps}
+${produtosCidadeSitemaps}
 </sitemapindex>`
 
   res.setHeader('Content-Type', 'text/xml')

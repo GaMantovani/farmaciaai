@@ -3,6 +3,29 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { getSupabase } from '../../lib/supabase'
 
+function norm(str) {
+  if (!str) return ''
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+let _cidadesCache = null
+async function getAllCidades(supabase) {
+  if (_cidadesCache) return _cidadesCache
+  const { data } = await supabase.rpc('cidades_agrupadas')
+  if (!data) return []
+  const cidades = []
+  for (const [estado, lista] of Object.entries(data)) {
+    for (const c of lista) {
+      cidades.push({ nome: c.nome, slug: `${norm(c.nome)}-${estado.toLowerCase()}` })
+    }
+  }
+  _cidadesCache = cidades
+  return cidades
+}
+
 const OG = 'linear-gradient(135deg,#ff6b1a,#ff4500)'
 const ACCENT = '#ff4500'
 
@@ -53,7 +76,7 @@ function formatarNome(nome) {
   }).join(' ')
 }
 
-export default function ProdutoPage({ produto, relacionados }) {
+export default function ProdutoPage({ produto, relacionados, cidades }) {
   if (!produto) return (
     <div style={{ textAlign: 'center', padding: 60 }}>
       <h1>Produto não encontrado</h1>
@@ -185,6 +208,22 @@ export default function ProdutoPage({ produto, relacionados }) {
           </div>
         )}
 
+        {cidades && cidades.length > 0 && (
+          <div style={{ background: '#fff', border: '1px solid #f0f0f0', borderRadius: 16, padding: '24px', marginBottom: 32 }}>
+            <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: 18, color: '#111', marginBottom: 16 }}>
+              {nome} por cidade
+            </h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {cidades.map(c => (
+                <Link key={c.slug} href={`/produto/${produto.slug}/${c.slug}`}
+                  style={{ background: '#f7f8fa', border: '1px solid #e8e8e8', borderRadius: 8, padding: '5px 12px', fontSize: 12, color: '#555' }}>
+                  {c.nome}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Link href="/produtos" style={{ fontSize: 13, color: ACCENT, border: '1px solid #ffb89a', padding: '8px 16px', borderRadius: 10 }}>Ver todos os produtos</Link>
           <Link href="/remedios" style={{ fontSize: 13, color: '#666', border: '1px solid #e0e0e0', padding: '8px 16px', borderRadius: 10 }}>Ver remédios</Link>
@@ -214,17 +253,21 @@ export async function getStaticProps({ params }) {
   if (error || !produto) return { notFound: true }
 
   const primeirasPalavras = produto.nome.split(/\s+/).slice(0, 2).join(' ')
-  const { data: rel } = await supabase
-    .from('produtos')
-    .select('ean, nome, slug')
-    .ilike('nome', `${primeirasPalavras}%`)
-    .neq('slug', params.slug)
-    .limit(8)
+  const [relResult, cidades] = await Promise.all([
+    supabase
+      .from('produtos')
+      .select('ean, nome, slug')
+      .ilike('nome', `${primeirasPalavras}%`)
+      .neq('slug', params.slug)
+      .limit(8),
+    getAllCidades(supabase),
+  ])
 
   return {
     props: {
       produto: { ean: produto.ean, nome: produto.nome, slug: produto.slug },
-      relacionados: (rel || []).map(r => ({ ean: r.ean, nome: r.nome, slug: r.slug })),
+      relacionados: (relResult.data || []).map(r => ({ ean: r.ean, nome: r.nome, slug: r.slug })),
+      cidades,
     },
     revalidate: 86400 * 7,
   }
