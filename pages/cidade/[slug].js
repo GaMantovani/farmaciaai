@@ -48,7 +48,38 @@ export default function CidadePage({ cidade, estado, farmacias, bairros }) {
           "itemListElement":[
             {"@type":"ListItem","position":1,"name":"Início","item":"https://farmaciaai.com.br"},
             {"@type":"ListItem","position":2,"name":"Cidades","item":"https://farmaciaai.com.br/cidades"},
-            {"@type":"ListItem","position":3,"name":cidade}
+            {"@type":"ListItem","position":3,"name":cidade,"item":`https://farmaciaai.com.br/cidade/${cidadeSlug}`}
+          ]
+        })}} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context":"https://schema.org","@type":"ItemList",
+          "name":`Farmácias em ${cidade}, ${estado}`,
+          "description":`Lista completa de ${farmacias.length} farmácias em ${cidade}, ${estado}.`,
+          "numberOfItems": farmacias.length,
+          "itemListElement": farmacias.slice(0,10).map((f,i) => ({
+            "@type":"ListItem","position":i+1,
+            "item":{
+              "@type":"Pharmacy","name":f.nome,
+              "address":{
+                "@type":"PostalAddress",
+                "streetAddress":[f.logradouro,f.numero].filter(Boolean).join(', '),
+                "addressLocality":f.cidade,"addressRegion":f.estado,"addressCountry":"BR"
+              },
+              ...(f.telefone ? {"telephone":f.telefone} : {}),
+              ...(f.latitude && f.longitude ? {"geo":{"@type":"GeoCoordinates","latitude":f.latitude,"longitude":f.longitude}} : {}),
+              "url":`https://farmaciaai.com.br/farmacia/${norm(f.cidade)}/${slugFarmacia(f)}`
+            }
+          }))
+        })}} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context":"https://schema.org","@type":"FAQPage",
+          "mainEntity":[
+            {"@type":"Question","name":`Quantas farmácias tem em ${cidade}?`,
+             "acceptedAnswer":{"@type":"Answer","text":`${cidade} tem ${farmacias.length} farmácias cadastradas no FarmáciaAí, distribuídas em ${bairros.length} bairros.`}},
+            {"@type":"Question","name":`Onde comprar remédio mais barato em ${cidade}?`,
+             "acceptedAnswer":{"@type":"Answer","text":`Use o FarmáciaAí para comparar preços de remédios em farmácias que entregam em ${cidade}, ${estado}. A diferença de preço pode chegar a 70% entre farmácias.`}},
+            {"@type":"Question","name":`Quais são as principais farmácias de ${cidade}?`,
+             "acceptedAnswer":{"@type":"Answer","text":`Em ${cidade} você encontra redes como ${farmacias.slice(0,3).map(f=>f.nome).join(', ')} e outras ${farmacias.length - 3 > 0 ? farmacias.length - 3 : 0} farmácias cadastradas.`}},
           ]
         })}} />
       </Head>
@@ -170,6 +201,39 @@ export default function CidadePage({ cidade, estado, farmacias, bairros }) {
               </Link>
             ))}
           </div>
+        </div>
+
+        <div style={{ background:'#fff',border:'1px solid #f0f0f0',borderRadius:16,padding:'24px',marginTop:16,marginBottom:16 }}>
+          <h2 style={{ fontSize:16,fontWeight:700,color:'#111',marginBottom:16 }}>Outras cidades</h2>
+          <div style={{ display:'flex',flexWrap:'wrap',gap:8 }}>
+            {[
+              {nome:'São Paulo',slug:'sao-paulo-sp'},{nome:'Rio de Janeiro',slug:'rio-de-janeiro-rj'},
+              {nome:'Belo Horizonte',slug:'belo-horizonte-mg'},{nome:'Curitiba',slug:'curitiba-pr'},
+              {nome:'Porto Alegre',slug:'porto-alegre-rs'},{nome:'Salvador',slug:'salvador-ba'},
+              {nome:'Fortaleza',slug:'fortaleza-ce'},{nome:'Recife',slug:'recife-pe'},
+              {nome:'Manaus',slug:'manaus-am'},{nome:'Goiânia',slug:'goiania-go'},
+              {nome:'Campinas',slug:'campinas-sp'},{nome:'Natal',slug:'natal-rn'},
+            ].filter(c => c.slug !== cidadeSlug).map(c => (
+              <Link key={c.slug} href={`/cidade/${c.slug}`}
+                style={{ fontSize:13,color:'#555',background:'#f7f8fa',border:'1px solid #e8e8e8',padding:'5px 12px',borderRadius:8 }}>
+                {c.nome}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ background:'#fff',border:'1px solid #f0f0f0',borderRadius:16,padding:'24px',marginBottom:16 }}>
+          <h2 style={{ fontSize:16,fontWeight:700,color:'#111',marginBottom:16 }}>Perguntas frequentes</h2>
+          {[
+            [`Quantas farmácias tem em ${cidade}?`,`${cidade} tem ${farmacias.length} farmácias cadastradas no FarmáciaAí, distribuídas em ${bairros.length} bairros.`],
+            [`Onde comprar remédio mais barato em ${cidade}?`,`Use o FarmáciaAí para comparar preços de remédios em farmácias com entrega em ${cidade}, ${estado}. A diferença de preço pode chegar a 70% entre farmácias.`],
+            [`Como encontrar uma farmácia de plantão em ${cidade}?`,`Consulte as farmácias listadas acima e ligue diretamente. O FarmáciaAí cadastra ${farmacias.length} farmácias em ${cidade}.`],
+          ].map(([q,a],i) => (
+            <div key={i} style={{ marginBottom:i<2?16:0,paddingBottom:i<2?16:0,borderBottom:i<2?'1px solid #f5f5f5':'none' }}>
+              <div style={{ fontSize:14,fontWeight:600,color:'#111',marginBottom:4 }}>{q}</div>
+              <div style={{ fontSize:13,color:'#555',lineHeight:1.7 }}>{a}</div>
+            </div>
+          ))}
         </div>
 
         <div style={{ background:'linear-gradient(135deg,#fff8f5,#fff3ee)',border:'1px solid #ffd4be',borderRadius:20,padding:'28px 32px',marginTop:16 }}>

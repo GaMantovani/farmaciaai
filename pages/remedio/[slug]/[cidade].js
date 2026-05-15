@@ -54,6 +54,40 @@ export default function RemedioEmCidade({ medicamento, precos, farmacias, slug, 
             { '@type': 'ListItem', position: 4, name: cidade, item: `https://farmaciaai.com.br/remedio/${slug}/${cidadeSlug}` },
           ]
         })}} />
+        {precos.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'Drug', 'name': medicamento,
+          'offers': precos.slice(0,5).map(p => ({
+            '@type': 'Offer', 'price': p.preco.toFixed(2), 'priceCurrency': 'BRL',
+            'seller': { '@type': 'Organization', 'name': p.farmacia },
+            'availability': 'https://schema.org/InStock',
+            ...(p.url ? { 'url': p.url } : {})
+          }))
+        })}} />}
+        {farmacias.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'ItemList',
+          'name': `Farmácias com ${medicamento} em ${cidade}`,
+          'numberOfItems': farmacias.length,
+          'itemListElement': farmacias.map((f,i) => ({
+            '@type': 'ListItem', 'position': i+1,
+            'item': {
+              '@type': 'Pharmacy', 'name': f.nome,
+              'address': {
+                '@type': 'PostalAddress',
+                'streetAddress': f.logradouro||'',
+                'addressLocality': f.cidade, 'addressRegion': f.estado, 'addressCountry': 'BR'
+              }
+            }
+          }))
+        })}} />}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'FAQPage',
+          'mainEntity': [
+            { '@type': 'Question', 'name': `Onde comprar ${medicamento} em ${cidade}?`,
+              'acceptedAnswer': { '@type': 'Answer', 'text': `Compare preços de ${medicamento} em farmácias com entrega em ${cidade}, ${estado} no FarmáciaAí. Encontre o menor preço de forma gratuita.` }},
+            { '@type': 'Question', 'name': `Qual o preço do ${medicamento} em ${cidade}?`,
+              'acceptedAnswer': { '@type': 'Answer', 'text': `O preço do ${medicamento} varia entre farmácias. Use o FarmáciaAí para comparar em tempo real e economizar em ${cidade}.` }},
+          ]
+        })}} />
       </Head>
       <style>{`*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;color:#222;background:#f7f8fa;-webkit-font-smoothing:antialiased}a{text-decoration:none;color:inherit}`}</style>
 

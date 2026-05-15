@@ -106,6 +106,39 @@ export default function ProdutoEmCidade({ produto, farmacias, slug, cidadeSlug, 
             { '@type': 'ListItem', position: 4, name: cidade, item: `https://farmaciaai.com.br/produto/${slug}/${cidadeSlug}` },
           ]
         })}} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'Product',
+          'name': nome,
+          'gtin13': produto.ean,
+          'category': categoria,
+          ...(marca ? { 'brand': { '@type': 'Brand', 'name': marca } } : {}),
+          'offers': { '@type': 'AggregateOffer', 'priceCurrency': 'BRL', 'availability': 'https://schema.org/InStock', 'areaServed': cidadeNome }
+        })}} />
+        {farmacias.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'ItemList',
+          'name': `Onde comprar ${nome} em ${cidade}`,
+          'numberOfItems': farmacias.length,
+          'itemListElement': farmacias.map((f,i) => ({
+            '@type': 'ListItem', 'position': i+1,
+            'item': {
+              '@type': 'Pharmacy', 'name': f.nome,
+              'address': {
+                '@type': 'PostalAddress',
+                'streetAddress': f.logradouro||'',
+                'addressLocality': f.cidade, 'addressRegion': f.estado, 'addressCountry': 'BR'
+              }
+            }
+          }))
+        })}} />}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'FAQPage',
+          'mainEntity': [
+            { '@type': 'Question', 'name': `Onde comprar ${nome} em ${cidade}?`,
+              'acceptedAnswer': { '@type': 'Answer', 'text': `Encontre ${nome}${marca ? ` da ${marca}` : ''} em farmácias de ${cidadeNome}. Compare preços online com entrega para ${cidade} no FarmáciaAí.` }},
+            { '@type': 'Question', 'name': `Qual o EAN de ${nome}?`,
+              'acceptedAnswer': { '@type': 'Answer', 'text': `O código EAN de ${nome} é ${produto.ean}. Use esse código para identificar o produto exato em qualquer farmácia de ${cidade}.` }},
+          ]
+        })}} />
       </Head>
       <style>{`*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;color:#222;background:#f7f8fa;-webkit-font-smoothing:antialiased}a{text-decoration:none;color:inherit}`}</style>
 

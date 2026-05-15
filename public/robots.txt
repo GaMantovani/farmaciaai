@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /api/indexnow
+Disallow: /api/buscar
 
 Sitemap: https://farmaciaai.com.br/sitemap-index.xml
