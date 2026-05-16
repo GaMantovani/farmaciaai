@@ -315,6 +315,6 @@ export async function getStaticProps({ params }) {
       estado,
       farmacias: farmaciasResult.data || [],
     },
-    revalidate: 86400,
+    revalidate: 604800,
   }
 }

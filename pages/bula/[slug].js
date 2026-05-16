@@ -271,5 +271,5 @@ export async function getStaticProps({ params }) {
 
   const remediosComPreco = (meds || []).map(m => ({ slug: m.slug, nome: m.nome }))
 
-  return { props: { bula: data, remediosComPreco }, revalidate: 86400 }
+  return { props: { bula: data, remediosComPreco }, revalidate: 1296000 }
 }

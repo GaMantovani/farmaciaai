@@ -1,6 +1,7 @@
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import '../styles/globals.css'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function App({ Component, pageProps }) {
     <div className={`${dmSans.variable} ${dmSerif.variable}`} style={{ fontFamily: 'var(--font-sans), DM Sans, sans-serif' }}>
       <Component {...pageProps} />
       <Analytics />
+      <SpeedInsights />
     </div>
   )
 }

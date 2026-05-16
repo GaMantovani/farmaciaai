@@ -258,5 +258,5 @@ export async function getStaticProps({ params }) {
     cnes: farmacia.cnes||'',
   }
 
-  return { props: { farmacia: safe, outrasNaCidade }, revalidate: 86400 }
+  return { props: { farmacia: safe, outrasNaCidade }, revalidate: 1296000 }
 }

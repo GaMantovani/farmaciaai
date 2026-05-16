@@ -398,6 +398,6 @@ export async function getStaticProps({ params }) {
 
   return {
     props: { medicamento, precos, slug: params.slug, cidades },
-    revalidate: 86400
+    revalidate: 604800
   }
 }

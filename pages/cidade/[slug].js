@@ -296,5 +296,5 @@ export async function getStaticProps({ params }) {
     latitude: f.latitude||null, longitude: f.longitude||null,
   }))
 
-  return { props: { cidade, estado, farmacias: farmaciasSafe, bairros }, revalidate: 86400 }
+  return { props: { cidade, estado, farmacias: farmaciasSafe, bairros }, revalidate: 1296000 }
 }

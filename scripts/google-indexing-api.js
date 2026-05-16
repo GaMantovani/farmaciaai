@@ -103,14 +103,25 @@ function submitUrl(url, token) {
 }
 
 async function main() {
-  // Verifica service account
-  if (!fs.existsSync(SERVICE_ACCOUNT_PATH)) {
-    console.error(`\n❌ Service account não encontrada em: ${SERVICE_ACCOUNT_PATH}`)
-    console.error('\nSiga os passos no topo deste arquivo para configurar.\n')
-    process.exit(1)
+  // Lê variáveis de ambiente do .env.local se existir
+  const envPath = require('path').join(__dirname, '../.env.local')
+  if (fs.existsSync(envPath)) {
+    fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+      const [k, ...v] = line.split('=')
+      if (k && v.length) process.env[k.trim()] = v.join('=').trim()
+    })
   }
 
-  const serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_PATH, 'utf8'))
+  // Verifica service account (só necessário sem OAuth token)
+  let serviceAccount = null
+  if (!process.env.GOOGLE_OAUTH_TOKEN) {
+    if (!fs.existsSync(SERVICE_ACCOUNT_PATH)) {
+      console.error(`\n❌ Service account não encontrada em: ${SERVICE_ACCOUNT_PATH}`)
+      console.error('\nSiga os passos no topo deste arquivo para configurar.\n')
+      process.exit(1)
+    }
+    serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_PATH, 'utf8'))
+  }
   const args = process.argv.slice(2)
   const typeArg = args.find(a => a.startsWith('--type='))?.split('=')[1]
   const sendAll = args.includes('--all')
@@ -169,22 +180,30 @@ async function main() {
   console.log(`\nTotal coletado: ${urls.length} URLs`)
   console.log(`Enviando: ${toSend.length} (cota diária: ${DAILY_QUOTA})\n`)
 
-  console.log('Obtendo token de acesso...')
-  const token = await getAccessToken(serviceAccount)
-  console.log('✓ Autenticado\n')
+  // Usa OAuth token pessoal se disponível (mais simples que service account)
+  let token
+  const oauthToken = process.env.GOOGLE_OAUTH_TOKEN
+  if (oauthToken) {
+    token = oauthToken
+    console.log('✓ Usando OAuth token pessoal\n')
+  } else {
+    console.log('Obtendo token de acesso via service account...')
+    token = await getAccessToken(serviceAccount)
+    console.log('✓ Autenticado\n')
+  }
 
   let ok = 0, erros = 0
   for (let i = 0; i < toSend.length; i++) {
     const result = await submitUrl(toSend[i], token)
     if (result.ok) {
       ok++
-      if (i % 20 === 0) process.stdout.write(`  ${i + 1}/${toSend.length} ✓\r`)
+      process.stdout.write(`  ${i + 1}/${toSend.length} ✓\r`)
     } else {
       erros++
       console.log(`  ✗ ${toSend[i]} (${result.status})`)
     }
-    // Google aceita até ~20 req/s mas vamos conservador
-    if (i % 10 === 9) await sleep(500)
+    // ~1 req/s para evitar rate limit (cota real é menor que os 600/min documentados)
+    await sleep(1100)
   }
 
   console.log(`\n✅ Google Indexing API: ${ok} URLs enviadas, ${erros} erros`)
